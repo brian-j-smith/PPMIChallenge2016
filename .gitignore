@@ -1,6 +1,11 @@
 /*
+
 !/.gitignore
 !/Data
 !/Programs
+/Programs/**/*
+!/Programs/**/
+!/Programs/**/*.[rR]
+!/Programs/**/*.[sS][aA][sS]
 !/References
 !/Results
