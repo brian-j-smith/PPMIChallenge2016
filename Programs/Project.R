@@ -1,5 +1,4 @@
 ## Set up working directory and environment
-setwd("H:\\Projects\\PPMI")
 remove(list=objects())
 
 
