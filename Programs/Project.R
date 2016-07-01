@@ -1,10 +1,10 @@
 ## Set up working directory and environment
-setwd("H:\\Projects\\PPMI")
+setwd("~/Documents/ppmi")
 remove(list=objects())
 
 
 ## PPMI source datasets
-load("Data\\PPMI.RData")
+load("Data/PPMI.RData")
 
 
 ## Required analysis libraries
