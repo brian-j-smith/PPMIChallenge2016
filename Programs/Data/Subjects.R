@@ -5,10 +5,12 @@ str(FAMHXPD)
 
 Temp <- join_all(
   list(
-    SCREEN[c("patno", "gender", seq.names(SCREEN, "hisplat", "ranos"))],
-    SOCIOECO[c("patno", "event_id", "educyrs", "handed")],
-    FAMHXPD[c("patno", "biomompd", "biodadpd", "magparpd", "pagparpd", "matau",
-              "mataupd", "patau", "pataupd", "fulsib", "fulsibpd")]
+    subset(PATIENT_STATUS, select = c(patno, recruitment_cat, enroll_status)),
+    subset(SCREEN, select = c(patno, gender, hisplat:ranos)),
+    subset(SOCIOECO, select = c(patno, event_id, educyrs, handed)),
+    subset(FAMHXPD, select = c(patno, biomompd, biodadpd, magparpd, pagparpd,
+                               matau, mataupd, patau, pataupd, fulsib,
+                               fulsibpd))
   ),
   by = "patno"
 )
@@ -27,12 +29,12 @@ SubjectsBL <- within(Temp, {
 
   bioparpd <- biomompd + biodadpd
   gparpd <- magparpd + pagparpd
-  n <- mataupd + pataupd
-  aupdpct <- ifelse(is.na(n), 0, n) / (matau + patau)
-  fulsibpdpct <- fulsibpd / fulsib
+  n <- matau + patau
+  aupdpct <- ifelse(n != 0, (mataupd + pataupd) / n, NA)
+  fulsibpdpct <- ifelse(fulsib != 0, fulsibpd / fulsib, NA)
 
   rm(biomompd, biodadpd, magparpd, pagparpd, matau, mataupd, patau, pataupd,
-     fulsibpd, fulsib, n)
+     fulsibpd, fulsib, n, event_id)
 })
 
 
@@ -40,3 +42,7 @@ SubjectsBL <- within(Temp, {
 str(SubjectsBL)
 
 summary(SubjectsBL)
+
+
+## Save dataset
+save(SubjectsBL, file="Data/Subjects.RData")
