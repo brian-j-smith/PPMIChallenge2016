@@ -5,30 +5,29 @@ str(NUPDRS2P)
 str(NUPDRS3)
 str(MODSEADL)
 
-byvars <- c("patno", "event_id")
 Temp <- join_all(
   list(
-    NUPDRS1[c(byvars, seq.names(NUPDRS1, "np1cog", "np1dds"))],
-    NUPDRS1P[c(byvars, seq.names(NUPDRS1P, "np1slpn", "np1fatg"))],
-    NUPDRS2P[c(byvars, seq.names(NUPDRS2P, "np2spch", "np2frez"))],
-    NUPDRS3[c(byvars, seq.names(NUPDRS3, "np3spch", "np3rtcon"), "nhy", "pd_med_use")],
-    MODSEADL[c(byvars, "mseadlg")]
+    subset(NUPDRS1, select = c(patno, event_id, np1cog:np1dds)),
+    subset(NUPDRS1P, select = c(patno, event_id, np1slpn:np1fatg)),
+    subset(NUPDRS2P, select = c(patno, event_id, np2spch:np2frez)),
+    subset(NUPDRS3, pag_name == "NUPDRS3",
+                    select = c(patno, event_id, np3spch:np3rtcon, nhy, pd_med_use)),
+    subset(MODSEADL, select = c(patno, event_id, mseadlg))
   ),
-  by = byvars
+  by = c("patno", "event_id")
 )
 
 Motor <- within(Temp, {
-  np1total <- rowSums(Temp[c(seq.names(Temp, "np1cog", "np1dds"),
-                             seq.names(Temp, "np1slpn", "np1fatg"))])
-  np2total <- rowSums(Temp[seq.names(Temp, "np2spch", "np2frez")])
-  np3total <- rowSums(Temp[seq.names(Temp, "np3spch", "np3rtcon")])
+  np1total <- rowSums(subset(Temp, select = c(np1cog:np1dds, np1slpn:np1fatg)))
+  np2total <- rowSums(subset(Temp, select = np2spch:np2frez))
+  np3total <- rowSums(subset(Temp, select = np3spch:np3rtcon))
   nptotal <- np1total + np2total + np3total
   pd_med_use <- factor(pd_med_use, 0:6)
 })
 
 
 ## Baseline assessments
-MotorBL <- subset(Motor, event_id == "BL")
+MotorBL <- subset(Motor, event_id == "BL", -event_id)
 
 
 ## Change in assessments from baseline to follow-up visits
@@ -42,7 +41,7 @@ Temp <- join(subset(Motor, substr(event_id, 1, 1) == "V"),
              Baseline,
              by = "patno")
 
-MotorV <- with(Temp, {
+MotorDiff <- with(Temp, {
   data.frame(
     patno = patno,
     event_id = event_id,
@@ -53,6 +52,14 @@ MotorV <- with(Temp, {
   )
 })
 
+MotorV <- reshape(
+  MotorDiff,
+  v.names = c("np1total_diff", "np2total_diff", "np3total_diff", "nptotal_diff"),
+  idvar = "patno",
+  timevar = "event_id",
+  direction = "wide"
+)
+
 
 ## Summary statistics
 str(Motor)
@@ -62,4 +69,7 @@ str(MotorV)
 summary(Motor)
 summary(MotorBL)
 summary(MotorV)
-by(MotorV, MotorV$event_id, summary)
+
+
+## Save datasets
+save(MotorBL, MotorV, file="Data/Motor.RData")
