@@ -15,7 +15,7 @@ load("Data/Subjects.RData")
 
 
 ## Required analysis libraries
-library("plyr")
+library(plyr)
 
 
 ## Project-specific functions
