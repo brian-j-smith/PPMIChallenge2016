@@ -16,6 +16,11 @@ load("Data/Subjects.RData")
 
 ## Required analysis libraries
 library(plyr)
+library(caret)
+
+library(doSNOW)
+library(parallel)
+registerDoSNOW(makeCluster(detectCores() - 1))
 
 
 ## Project-specific functions
