@@ -24,6 +24,16 @@ registerDoSNOW(makeCluster(detectCores() - 1))
 
 
 ## Project-specific functions
+
+join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE) {
+  X <- join_all(list(...), by=by)
+  Xsub <- droplevels(do.call(base::subset, list(X, subset=substitute(subset),
+                                                select=substitute(select))))
+  f <- colwise(function(x) if(na.add && is.factor(x)) addNA(x, ifany=TRUE) else x)
+  f(Xsub)
+}
+
+
 seq.names <- function(x, from, to) {
   vals <- names(x)
   idx <- match(c(from, to), vals)
