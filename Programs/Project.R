@@ -48,6 +48,25 @@ join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE) {
 }
 
 
+model.data <- function(fo, data, method=NULL, ...) {
+  mf <- model.frame(fo, data, na.action=na.pass)
+  x <- model.matrix(fo, mf)
+  if(attr(terms(mf), "intercept")) x <- subset(x, select=-`(Intercept)`)
+  y <- model.response(mf)
+
+  idx <- complete.cases(y)
+  x <- subset(x, idx)
+  y <- subset(y, idx)
+  
+  if(length(method)) {
+    pp <- preProcess(x, method=method, ...)
+    x <- predict(pp, x)
+  }
+  
+  list(x=x, y=y)
+}
+
+
 seq.names <- function(x, from, to) {
   vals <- names(x)
   idx <- match(c(from, to), vals)
