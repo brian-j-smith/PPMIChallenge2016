@@ -25,6 +25,20 @@ registerDoSNOW(makeCluster(detectCores() - 1))
 
 ## Project-specific functions
 
+dropfactors <- function(data) {
+  i <- 1
+  while(i <= length(data)) {
+    x <- data[[i]]
+    if(is.factor(x) && nlevels(x) < 2) {
+      data[[i]] <- NULL
+    } else {
+      i <- i + 1
+    }
+  }
+  data
+}
+
+
 join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE) {
   X <- join_all(list(...), by=by)
   Xsub <- droplevels(do.call(base::subset, list(X, subset=substitute(subset),
