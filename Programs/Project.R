@@ -20,7 +20,7 @@ library(caret)
 
 library(doSNOW)
 library(parallel)
-registerDoSNOW(makeCluster(detectCores() - 1))
+registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
 
 ## Project-specific functions
