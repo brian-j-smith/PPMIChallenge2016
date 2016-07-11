@@ -20,8 +20,7 @@ Temp <- join_all(
         COGCATG[c(byvars, seq.names(COGCATG, "cogdecln", "cogdxcl"))],
         EPWORTH[c(byvars, seq.names(EPWORTH, "ess1", "ess8"))],
         GDSSHORT[c(byvars, seq.names(GDSSHORT, "gdssatis", "gdsbeter"))],
-        HVLT[c(byvars, seq.names(HVLT, "hvltrt1", "hvltvrsn"),
-               seq.names(HVLT, "dvt_total_recall", "dvt_recog_disc_index"))],
+        HVLT[c(byvars, seq.names(HVLT, "dvt_total_recall", "dvt_recog_disc_index"))],
         LNSPD[c(byvars, "lns_totraw", "dvs_lns")],
         QUIPCS[c(byvars, seq.names(QUIPCS, "tmgamble", "cntrldsm"))],
         REMSLEEP[c(byvars, seq.names(REMSLEEP, "drmvivid",  "brninfm"))],
@@ -57,9 +56,6 @@ NonMotor <- within(Temp, {
     gds_sub_2 <- rowSums(Temp[seq.names(Temp, "gdsdropd", "gdsbeter")], na.rm = TRUE)
     gds_total <- gds_sub_1 + gds_sub_2
     gds_deprs <- factor(1*(gds_total >= 5))
-    hvlt_imm_recall <- hvltrt1 + hvltrt2 + hvltrt3
-    hvlt_disc_recog <- hvltrec - (hvltfprl + hvltfpun)
-    hvlt_retent <- hvltrdly/max(hvltrt2, hvltrt3)
     quip_sec_a <- 1*(cntrlgmb == 1 | tmgamble == 1)
     quip_sec_b <- 1*(cntrlsex == 1 | tmsex == 1)
     quip_sec_c <- 1*(cntrlbuy == 1 | tmbuy == 1)
@@ -71,7 +67,6 @@ NonMotor <- within(Temp, {
     rem_total <- rem_sub_1 + rem_sub_2
     rem_slp_dis <- factor(1*(rem_total >= 5))
     scopa_total <- rowSums(Temp[c(paste0("scau", 1:25))], na.rm = TRUE)
-    seman_fluen <- rowSums(Temp[c("vltanim", "vltveg", "vltfruit")], na.rm = TRUE)
     stai_sub_1 <- rowSums(Temp[c(paste0("staiad", c(3,4,6,7,9,12,13,14,17,18,22,24,25,
                                                 28,29,31,32,35,37,38,40)))], na.rm = TRUE)
     stai_sub_2 <- rowSums(Temp[stai_rev_vars], na.rm = TRUE)
@@ -91,40 +86,39 @@ NonMotor <- within(Temp, {
 
 ## Baseline assessments
 NonMotorBL <- subset(NonMotor, event_id == "BL")
-Baseline <- NonMotorBL[c("patno",
-                         "jlo_totraw", "jlo_totcalc", "age_assess_jlo", "dvs_jlo_mssa", "dvs_jlo_mssae",
-                         seq.names(NonMotorBL, "cogdecln", "cogdxcl"),
-                         "ess_total", "ess_sleepy",
-                         "gds_total", "gds_deprs",
-                         seq.names(NonMotorBL, "hvlt_disc_recog", "hvlt_retent"),
-                         seq.names(NonMotorBL, "dvt_total_recall", "dvt_recog_disc_index"),
-                         "lns_totraw", "dvs_lns",
-                         "quip_total",
-                         "rem_total", "rem_slp_dis",
-                         "scopa_total",
-                         "dvt_sftanim", "dvs_sftanim", "seman_fluen",
-                         "stai_total",
-                         "dvsd_sdm", "dvt_sdm",
-                         "upsit_total")]
+NonMotorBL <- NonMotorBL[c("patno",
+             "jlo_totraw", "jlo_totcalc", "dvs_jlo_mssa", "dvs_jlo_mssae",
+             seq.names(NonMotorBL, "cogdecln", "cogdxcl"),
+             "ess_total", "ess_sleepy",
+             "gds_total", "gds_deprs",
+             seq.names(NonMotorBL, "dvt_total_recall", "dvt_recog_disc_index"),
+             "lns_totraw", "dvs_lns",
+             "quip_total",
+             "rem_total", "rem_slp_dis",
+             "scopa_total",
+             "dvt_sftanim", "dvs_sftanim",
+             "stai_total",
+             "dvsd_sdm", "dvt_sdm",
+             "upsit_total")]
+
+## Change in assessments from baseline to follow-up visits
+Baseline <- NonMotorBL
 names(Baseline)[-1] <- paste0(names(Baseline[-1]), "bl")
 
 Temp <- join(subset(NonMotor, substr(event_id, 1, 1) == "V"),
              Baseline,
              by = "patno")
 
-NonMotorV <- with(Temp, {
+NonMotorDiff <- with(Temp, {
     data.frame(
         patno = patno,
         event_id = event_id,
         jlo_totraw_diff = jlo_totraw - jlo_totrawbl,      
         jlo_totcalc_diff = jlo_totcalc - jlo_totcalcbl,         
-        age_assess_jlo_diff = age_assess_jlo - age_assess_jlobl,      
         dvs_jlo_mssa_diff = dvs_jlo_mssa - dvs_jlo_mssabl,        
         dvs_jlo_mssae_diff = dvs_jlo_mssae - dvs_jlo_mssaebl,       
         ess_total_diff = ess_total - ess_totalbl,           
         gds_total_diff = gds_total - gds_totalbl,           
-        hvlt_disc_recog_diff = hvlt_disc_recog - hvlt_disc_recogbl,     
-        hvlt_retent_diff = hvlt_retent - hvlt_retentbl,         
         dvt_total_recall_diff = dvt_total_recall - dvt_total_recallbl,    
         dvt_delayed_recall_diff = dvt_delayed_recall - dvt_delayed_recallbl,  
         dvt_retention_diff = dvt_retention - dvt_retentionbl,       
@@ -136,13 +130,21 @@ NonMotorV <- with(Temp, {
         scopa_total_diff = scopa_total - scopa_totalbl,         
         dvt_sftanim_diff = dvt_sftanim - dvt_sftanimbl,         
         dvs_sftanim_diff = dvs_sftanim - dvs_sftanimbl,         
-        seman_fluen_diff = seman_fluen - seman_fluenbl,         
         stai_total_diff = stai_total - stai_totalbl,          
         dvsd_sdm_diff = dvsd_sdm - dvsd_sdmbl,            
         dvt_sdm_diff = dvt_sdm - dvt_sdmbl,             
         upsit_total_diff = upsit_total - upsit_totalbl
     )
 })
+
+NonMotorDiff <- NonMotorDiff[-c(451,1063),] # remove 2 dup records
+
+NonMotorV <- reshape(
+    NonMotorDiff,
+    idvar = "patno",
+    timevar = "event_id",
+    direction = "wide"
+)
 
 str(NonMotor)
 str(NonMotorBL)
@@ -151,3 +153,7 @@ str(NonMotorV)
 summary(NonMotor)
 summary(NonMotorBL)
 summary(NonMotorV)
+
+
+## Save datasets
+save(NonMotorBL, NonMotorV, file = "Data/NonMotor.RData")
