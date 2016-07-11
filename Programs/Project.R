@@ -12,6 +12,7 @@ remove(list=objects())
 load("Data/Motor.RData")
 load("Data/PPMI.RData")
 load("Data/Subjects.RData")
+load("Data/Imaging.RData")
 
 
 ## Required analysis libraries
@@ -41,9 +42,9 @@ dropfactors <- function(data) {
 
 join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE) {
   X <- join_all(list(...), by=by)
-  Xsub <- droplevels(do.call(base::subset, list(X, subset=substitute(subset),
+  Xsub <- droplevels(do.call(base::subset, list(X, subset=substitute(subset), #drops levels without observations after subset
                                                 select=substitute(select))))
-  f <- colwise(function(x) if(na.add && is.factor(x)) addNA(x, ifany=TRUE) else x)
+  f <- colwise(function(x) if(na.add && is.factor(x)) addNA(x, ifany=TRUE) else x) #make new category for missing subjects
   f(Xsub)
 }
 
