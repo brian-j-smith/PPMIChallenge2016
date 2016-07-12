@@ -92,7 +92,6 @@ str(ImagingV)
 summary(Imaging)
 summary(ImagingBL)
 summary(ImagingV)
-by(ImagingV, ImagingV$event_id, summary)
 
 save(ImagingBL, ImagingV, file="Data/Imaging.RData")
 
