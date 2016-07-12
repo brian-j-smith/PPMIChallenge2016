@@ -36,7 +36,7 @@ Imaging <- within(Temp, {
 
 
 ## Baseline assessments
-ImagingBL <- subset(Imaging, event_id == "SC")
+ImagingBL <- subset(Imaging, event_id == "SC", -event_id)
 
 ## Change in assessments from baseline to follow-up visits
 Baseline <- ImagingBL[c("patno", seq.names(ImagingBL, "caudate_r", "lputpost.s"))]
