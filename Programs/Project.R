@@ -28,6 +28,22 @@ registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
 ## Project-specific functions
 
+auc.change <- function(x, time) {
+  n <- ncol(x)
+  timediff <- diff(time)
+  
+  stopifnot(n == length(time))
+  stopifnot(all(timediff > 0))
+  
+  auc <- 0
+  for(i in seq(2, n, by=1)) {
+    xmin <- pmin(x[,i], x[,i-1])
+    auc <- auc + timediff[i-1] * (0.5 * abs(x[,i] - x[,i-1]) + xmin - x[,1])
+  }
+  auc
+}
+
+
 dropfactors <- function(data) {
   i <- 1
   while(i <= length(data)) {
