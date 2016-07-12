@@ -12,6 +12,9 @@ remove(list=objects())
 load("Data/Motor.RData")
 load("Data/PPMI.RData")
 load("Data/Subjects.RData")
+load("Data/NonMotor.RData")
+load("Data/MedHx.RData")
+load("Data/Enroll.RData")
 
 
 ## Required analysis libraries
