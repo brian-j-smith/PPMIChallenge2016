@@ -9,8 +9,10 @@ remove(list=objects())
 
 
 ## PPMI source datasets
+load("Data/Enroll.RData")
 load("Data/Imaging.RData")
 load("Data/Motor.RData")
+load("Data/NonMotor.RData")
 load("Data/PPMI.RData")
 load("Data/Subjects.RData")
 
