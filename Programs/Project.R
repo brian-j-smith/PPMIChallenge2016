@@ -27,6 +27,10 @@ library(parallel)
 registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
 
+## Install required caret packages
+if(!require(RANN)) install.packages("RANN")
+
+
 ## Project-specific functions
 
 auc.change <- function(x, time) {
