@@ -68,10 +68,10 @@ Temp[seq.names(Temp, "pdsurg", "pdslunk")] <- lapply(Temp[seq.names(Temp, "pdsur
 MedHx <- Temp
 
 ## Baseline assessments
-MedHxBL <- subset(MedHx, event_id == "BL")
+MedHxBL <- subset(MedHx, event_id == "BL", -event_id)
 
 ## Change in assessments from baseline to follow-up visits
-Baseline <- MedHxBL[,-2]
+Baseline <- MedHxBL
 names(Baseline)[-1] <- paste0(names(Baseline[-1]), "bl")
 
 Temp <- join(subset(MedHx, substr(event_id, 1, 1) == "V"),
