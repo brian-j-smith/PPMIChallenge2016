@@ -29,6 +29,7 @@ registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
 ## Install required caret packages
 if(!require(RANN)) install.packages("RANN")
+if(!require(e1071)) install.packages("e1071")
 
 
 ## Project-specific functions
