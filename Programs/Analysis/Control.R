@@ -34,11 +34,11 @@ sbfControlCV <- function(alpha = 0.05, ...) {
 }
 
 
-## Recursive feature selection control objects
+## Recursive feature elimination control functions
 
-rfeControlCV <- function(functions, ...) {
+rfeControlCV <- function(...) {
   rfeControl(
-    functions = functions,
+    functions = caretFuncs,
     method = "repeatedcv",
     number = 10,
     repeats = 5,
