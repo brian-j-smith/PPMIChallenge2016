@@ -5,6 +5,7 @@ str(EPWORTH)
 str(GDSSHORT)
 str(HVLT)
 str(LNSPD)
+str(MOCA)
 str(QUIPCS)
 str(REMSLEEP)
 str(SCOPAAUT)
@@ -12,6 +13,17 @@ str(SFT)
 str(STAI)
 str(SDM)
 str(UPSIT)
+
+## use MOCA SC assessments as BL
+table(MOCA$event_id, useNA = "always")
+patno_bl <- subset(MOCA, event_id == "BL")$patno
+patno_sc <- subset(MOCA, event_id == "SC")$patno
+idx <- which(patno_sc %in% patno_bl)
+patno_sc <- patno_sc[idx]
+MOCA$event_id <- with(MOCA,
+    ifelse(event_id == "SC" & patno != patno_sc, "BL", event_id)   
+)
+table(MOCA$event_id, useNA = "always")
 
 byvars <- c("patno", "event_id")
 Temp <- join_all(
@@ -22,6 +34,7 @@ Temp <- join_all(
         GDSSHORT[c(byvars, seq.names(GDSSHORT, "gdssatis", "gdsbeter"))],
         HVLT[c(byvars, seq.names(HVLT, "dvt_total_recall", "dvt_recog_disc_index"))],
         LNSPD[c(byvars, "lns_totraw", "dvs_lns")],
+        MOCA[,c(byvars, "mcatot")],
         QUIPCS[c(byvars, seq.names(QUIPCS, "tmgamble", "cntrldsm"))],
         REMSLEEP[c(byvars, seq.names(REMSLEEP, "drmvivid",  "brninfm"))],
         SCOPAAUT[c(byvars, paste0("scau", 1:25))],
@@ -93,6 +106,7 @@ NonMotorBL <- NonMotorBL[c("patno",
              "gds_total", "gds_deprs",
              seq.names(NonMotorBL, "dvt_total_recall", "dvt_recog_disc_index"),
              "lns_totraw", "dvs_lns",
+             "mocatot",
              "quip_total",
              "rem_total", "rem_slp_dis",
              "scopa_total",
@@ -124,7 +138,8 @@ NonMotorDiff <- with(Temp, {
         dvt_retention_diff = dvt_retention - dvt_retentionbl,       
         dvt_recog_disc_index_diff = dvt_recog_disc_index - dvt_recog_disc_indexbl,
         lns_totraw_diff = lns_totraw - lns_totrawbl,          
-        dvs_lns_diff = dvs_lns - dvs_lnsbl,             
+        dvs_lns_diff = dvs_lns - dvs_lnsbl,   
+        mcatot_diff = mcatot - mcatotbl,
         quip_total_diff = quip_total - quip_totalbl,          
         rem_total_diff = rem_total - rem_totalbl,            
         scopa_total_diff = scopa_total - scopa_totalbl,         
