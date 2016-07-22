@@ -98,3 +98,27 @@ seq.names <- function(x, from, to) {
   idx <- match(c(from, to), vals)
   vals[seq(idx[1], idx[2])]
 }
+
+
+ST2V <- function(id, dt) {
+  i <- which(id == "BL")
+  j <- which(id == "ST")
+  if(length(i) && length(j)) {
+    d <- c(1, 12) %*% (matrix(as.numeric(unlist(strsplit(dt, "/"))), nrow=2) -
+                         as.numeric(unlist(strsplit(dt[i], "/"))))
+    
+    visits <- c(V01=3, V02=6, V03=9, V04=12, V05=18, V06=24, V07=30, V08=36,
+                V09=42, V10=48, V11=54, V12=60)
+    lwr <- visits - 1
+    upr <- visits + 1
+    
+    vid <- sapply(d, function(d) {
+      k <- which(lwr <= d & d <= upr)
+      if(length(k)) names(k) else NA
+    })
+    
+    v <- vid[j]
+    if(!(v %in% id)) id[j] <- v
+  }
+  id
+}
