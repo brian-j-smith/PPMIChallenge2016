@@ -45,3 +45,51 @@ rfeControlCV <- function(...) {
     ...
   )
 }
+
+
+## Model-fitting engine
+
+modelfit <- function(formula, data, dataMethods=c("zv", "nzv"),
+                     ImpMethod="knnImpute", trMethods=NULL, sbfMethods=NULL,
+                     rfeMethods=NULL, trControl=trControlCV(),
+                     sbfControl=sbfControlCV(0.20), rfeControl=rfeControlCV(),
+                     tuneGrids=list()) {
+  Train <- list()
+  SBF <- list()
+  RFE <- list()
+
+  ModelData <- model.data(formula, data, method=dataMethods)
+  
+  ## Training
+  for(trMethod in trMethods) {
+    Train[[trMethod]] <- try(train(
+      ModelData$x, ModelData$y,
+      method = trMethod,
+      preProcess = ImpMethod,
+      trControl = trControl,
+      tuneGrid = tuneGrids[[trMethod]]
+    ), TRUE)
+  }
+
+  ## Selection by filtering
+  for(sbfMethod in sbfMethods) {
+    SBF[[sbfMethod]] <- try(sbf(
+      ModelData$x, ModelData$y,
+      method = sbfMethod,
+      preProcess = ImpMethod,
+      sbfControl = sbfControl
+    ), TRUE)
+  }
+  
+  ## Recursive feature extraction (backward selection)
+  for(rfeMethod in rfeMethods) {
+    RFE[[rfeMethod]] <- try(rfe(
+      ModelData$x, ModelData$y,
+      method = rfeMethod,
+      preProcess = ImpMethod,
+      rfeControl = rfeControl
+    ), TRUE)
+  }
+  
+  list(Train=Train, SBF=SBF, RFE=RFE)
+}
