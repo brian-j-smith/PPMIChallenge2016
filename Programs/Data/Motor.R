@@ -7,7 +7,7 @@ str(MODSEADL)
 
 Temp <- join_all(
   list(
-    subset(NUPDRS1, select = c(patno, event_id, np1cog:np1dds)),
+    subset(NUPDRS1, select = c(patno, event_id, infodt, np1cog:np1dds)),
     subset(NUPDRS1P, select = c(patno, event_id, np1slpn:np1fatg)),
     subset(NUPDRS2P, select = c(patno, event_id, np2spch:np2frez)),
     subset(NUPDRS3, pag_name == "NUPDRS3",
@@ -16,6 +16,9 @@ Temp <- join_all(
   ),
   by = c("patno", "event_id")
 )
+
+Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
+Temp$infodt <- NULL
 
 Motor <- within(Temp, {
   np1total <- rowSums(subset(Temp, select = c(np1cog:np1dds, np1slpn:np1fatg)))
@@ -31,30 +34,20 @@ MotorBL <- subset(Motor, event_id == "BL", -event_id)
 
 
 ## Change in assessments from baseline to follow-up visits
-Baseline <- MotorBL[c("patno", "np1total", "np2total", "np3total", "nptotal")]
-Baseline <- rename(Baseline, c("np1total" = "np1totalbl",
-                               "np2total" = "np2totalbl",
-                               "np3total" = "np3totalbl",
-                               "nptotal" = "nptotalbl"))
+baseline <- function(x, id) {
+  i <- which(id == "BL")
+  if(length(i)) x[i] else NA
+}
 
-Temp <- join(subset(Motor, substr(event_id, 1, 1) == "V"),
-             Baseline,
-             by = "patno")
-
-MotorDiff <- with(Temp, {
-  data.frame(
-    patno = patno,
-    event_id = event_id,
-    np1total_diff = np1total - np1totalbl,
-    np2total_diff = np2total - np2totalbl,
-    np3total_diff = np3total - np3totalbl,
-    nptotal_diff = nptotal - nptotalbl
-  )
-})
+MotorDiff <- ddply(Motor, .(patno), mutate,
+                   np1total_diff = np1total - baseline(np1total, event_id),
+                   np2total_diff = np2total - baseline(np2total, event_id),
+                   np3total_diff = np3total - baseline(np3total, event_id),
+                   nptotal_diff = nptotal - baseline(nptotal, event_id))
 
 MotorV <- reshape(
-  MotorDiff,
-  v.names = c("np1total_diff", "np2total_diff", "np3total_diff", "nptotal_diff"),
+  subset(MotorDiff, substr(event_id, 1, 1) == "V",
+         c(patno, event_id, np1total_diff, np2total_diff, np3total_diff, nptotal_diff)),
   idvar = "patno",
   timevar = "event_id",
   direction = "wide"
