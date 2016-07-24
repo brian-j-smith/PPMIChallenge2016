@@ -74,15 +74,16 @@ join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE) {
 }
 
 
-model.data <- function(fo, data, method=NULL, ...) {
+model.data <- function(fo, data, method=NULL, prop.na=0.20, ...) {
   mf <- model.frame(fo, data, na.action=na.pass)
   x <- model.matrix(fo, mf)
   if(attr(terms(mf), "intercept")) x <- subset(x, select=-`(Intercept)`)
   y <- model.response(mf)
 
-  idx <- complete.cases(y)
-  x <- subset(x, idx)
-  y <- subset(y, idx)
+  idx1 <- complete.cases(y)
+  idx2 <- apply(x, 2, function(x) mean(is.na(x)) <= prop.na)
+  x <- subset(x, idx1, idx2)
+  y <- subset(y, idx1)
   
   if(length(method)) {
     pp <- preProcess(x, method=method, ...)
