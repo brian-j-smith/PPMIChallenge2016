@@ -14,6 +14,7 @@ str(STAI)
 str(SDM)
 str(UPSIT)
 
+
 ## use MOCA SC assessments as BL
 table(MOCA$event_id, useNA = "always")
 patno_bl <- subset(MOCA, event_id == "BL")$patno
@@ -28,25 +29,26 @@ table(MOCA$event_id, useNA = "always")
 byvars <- c("patno", "event_id")
 Temp <- join_all(
     list(
-        LINEORNT[c(byvars, seq.names(LINEORNT, "jlo_totraw", "dvs_jlo_mssae"))],
-        COGCATG[c(byvars, seq.names(COGCATG, "cogdecln", "cogdxcl"))],
-        EPWORTH[c(byvars, seq.names(EPWORTH, "ess1", "ess8"))],
-        GDSSHORT[c(byvars, seq.names(GDSSHORT, "gdssatis", "gdsbeter"))],
-        HVLT[c(byvars, seq.names(HVLT, "dvt_total_recall", "dvt_recog_disc_index"))],
-        LNSPD[c(byvars, "lns_totraw", "dvs_lns")],
-        MOCA[,c(byvars, "mcatot")],
-        QUIPCS[c(byvars, seq.names(QUIPCS, "tmgamble", "cntrldsm"))],
-        REMSLEEP[c(byvars, seq.names(REMSLEEP, "drmvivid",  "brninfm"))],
-        SCOPAAUT[c(byvars, paste0("scau", 1:25))],
-        SFT[c(byvars, "vltanim", "vltveg", "vltfruit", "dvs_sftanim", "dvt_sftanim")],
-        STAI[c(byvars, seq.names(STAI, "staiad1", "staiad40"))],
-        SDM[c(byvars, "dvsd_sdm", "dvt_sdm")],
-        UPSIT[c(byvars, seq.names(UPSIT, "upsitbk1", "upsitbk4"))]
+        subset(LINEORNT, select = c(patno, event_id, jlo_totraw:dvs_jlo_mssae)),
+        subset(COGCATG, select = c(patno, event_id, cogdecln:cogdxcl)),
+        subset(EPWORTH, select = c(patno, event_id, ess1:ess8)),
+        subset(GDSSHORT, select = c(patno, event_id, gdssatis:gdsbeter)),
+        subset(HVLT, select = c(patno, event_id, dvt_total_recall:dvt_recog_disc_index)),
+        subset(LNSPD, select = c(patno, event_id, lns_totraw, dvs_lns)),
+        subset(MOCA, select = c(patno, event_id, mcatot)),
+        subset(QUIPCS, select = c(patno, event_id, tmgamble:cntrldsm)),
+        subset(REMSLEEP, select = c(patno, event_id, drmvivid:brninfm)),
+        subset(SCOPAAUT, select = c(patno, event_id, scau1:scau23, scau24, scau25)),
+        subset(SFT, select = c(patno, event_id, vltanim, vltveg, vltfruit, dvs_sftanim, dvt_sftanim)),
+        subset(STAI, select = c(patno, event_id, staiad1:staiad40)),
+        subset(SDM, select = c(patno, event_id, dvsd_sdm, dvt_sdm)),
+        subset(UPSIT, select = c(patno, event_id, upsitbk1:upsitbk4))
     ),
     by = byvars
 )
 
 
+## compute derived variables
 rev_score <- function(x){
     4*(x == 1) + 3*(x == 2) +  2*(x == 3) + 1*(x == 4)
 }
@@ -98,64 +100,101 @@ NonMotor <- within(Temp, {
 
 
 ## Baseline assessments
-NonMotorBL <- subset(NonMotor, event_id == "BL")
-NonMotorBL <- NonMotorBL[c("patno",
-             "jlo_totraw", "jlo_totcalc", "dvs_jlo_mssa", "dvs_jlo_mssae",
-             seq.names(NonMotorBL, "cogdecln", "cogdxcl"),
-             "ess_total", "ess_sleepy",
-             "gds_total", "gds_deprs",
-             seq.names(NonMotorBL, "dvt_total_recall", "dvt_recog_disc_index"),
-             "lns_totraw", "dvs_lns",
-             "mocatot",
-             "quip_total",
-             "rem_total", "rem_slp_dis",
-             "scopa_total",
-             "dvt_sftanim", "dvs_sftanim",
-             "stai_total",
-             "dvsd_sdm", "dvt_sdm",
-             "upsit_total")]
+NonMotorBL <- subset(
+    NonMotor,
+    event_id == "BL",
+    select = c(patno,
+               jlo_totraw, jlo_totcalc, dvs_jlo_mssa, dvs_jlo_mssae,
+               cogdecln:cogdxcl,
+               ess_total, ess_sleepy,
+               gds_total, gds_deprs,
+               dvt_total_recall:dvt_recog_disc_index,
+               lns_totraw, dvs_lns,
+               mcatot,
+               quip_total,
+               rem_total, rem_slp_dis,
+               scopa_total,
+               dvt_sftanim, dvs_sftanim,
+               stai_total,
+               dvsd_sdm, dvt_sdm,
+               upsit_total)
+)
+
 
 ## Change in assessments from baseline to follow-up visits
-Baseline <- NonMotorBL
-names(Baseline)[-1] <- paste0(names(Baseline[-1]), "bl")
+baseline <- function(x, id) {
+    i <- which(id == "BL")
+    if(length(i)) x[i] else NA
+}
 
-Temp <- join(subset(NonMotor, substr(event_id, 1, 1) == "V"),
-             Baseline,
-             by = "patno")
+NonMotorDiff <- ddply(
+    NonMotor, .(patno), mutate,
+    jlo_totraw_diff = jlo_totraw - baseline(jlo_totraw, event_id),      
+    jlo_totcalc_diff = jlo_totcalc - baseline(jlo_totcalc, event_id),          
+    dvs_jlo_mssa_diff = dvs_jlo_mssa - baseline(dvs_jlo_mssa, event_id),         
+    dvs_jlo_mssae_diff = dvs_jlo_mssae - baseline(dvs_jlo_mssae, event_id),        
+    ess_total_diff = ess_total - baseline(ess_total, event_id),            
+    gds_total_diff = gds_total - baseline(gds_total, event_id),            
+    dvt_total_recall_diff = dvt_total_recall - baseline(dvt_total_recall, event_id),
+    dvt_delayed_recall_diff = dvt_delayed_recall - baseline(dvt_delayed_recall, event_id), 
+    dvt_retention_diff = dvt_retention - baseline(dvt_retention, event_id),        
+    dvt_recog_disc_index_diff = dvt_recog_disc_index - baseline(dvt_recog_disc_index, event_id), 
+    lns_totraw_diff = lns_totraw - baseline(lns_totraw, event_id),           
+    dvs_lns_diff = dvs_lns - baseline(dvs_lns, event_id),    
+    mcatot_diff = mcatot - baseline(mcatot, event_id), 
+    quip_total_diff = quip_total - baseline(quip_total, event_id),           
+    rem_total_diff = rem_total - baseline(rem_total, event_id),             
+    scopa_total_diff = scopa_total - baseline(scopa_total, event_id),          
+    dvt_sftanim_diff = dvt_sftanim - baseline(dvt_sftanim, event_id),          
+    dvs_sftanim_diff = dvs_sftanim - baseline(dvs_sftanim, event_id),          
+    stai_total_diff = stai_total - baseline(stai_total, event_id),           
+    dvsd_sdm_diff = dvsd_sdm - baseline(dvsd_sdm, event_id),             
+    dvt_sdm_diff = dvt_sdm - baseline(dvt_sdm, event_id),              
+    upsit_total_diff = upsit_total - baseline(upsit_total, event_id)
+)
 
-NonMotorDiff <- with(Temp, {
-    data.frame(
-        patno = patno,
-        event_id = event_id,
-        jlo_totraw_diff = jlo_totraw - jlo_totrawbl,      
-        jlo_totcalc_diff = jlo_totcalc - jlo_totcalcbl,         
-        dvs_jlo_mssa_diff = dvs_jlo_mssa - dvs_jlo_mssabl,        
-        dvs_jlo_mssae_diff = dvs_jlo_mssae - dvs_jlo_mssaebl,       
-        ess_total_diff = ess_total - ess_totalbl,           
-        gds_total_diff = gds_total - gds_totalbl,           
-        dvt_total_recall_diff = dvt_total_recall - dvt_total_recallbl,    
-        dvt_delayed_recall_diff = dvt_delayed_recall - dvt_delayed_recallbl,  
-        dvt_retention_diff = dvt_retention - dvt_retentionbl,       
-        dvt_recog_disc_index_diff = dvt_recog_disc_index - dvt_recog_disc_indexbl,
-        lns_totraw_diff = lns_totraw - lns_totrawbl,          
-        dvs_lns_diff = dvs_lns - dvs_lnsbl,   
-        mcatot_diff = mcatot - mcatotbl,
-        quip_total_diff = quip_total - quip_totalbl,          
-        rem_total_diff = rem_total - rem_totalbl,            
-        scopa_total_diff = scopa_total - scopa_totalbl,         
-        dvt_sftanim_diff = dvt_sftanim - dvt_sftanimbl,         
-        dvs_sftanim_diff = dvs_sftanim - dvs_sftanimbl,         
-        stai_total_diff = stai_total - stai_totalbl,          
-        dvsd_sdm_diff = dvsd_sdm - dvsd_sdmbl,            
-        dvt_sdm_diff = dvt_sdm - dvt_sdmbl,             
-        upsit_total_diff = upsit_total - upsit_totalbl
-    )
-})
+## remove two duplicate records
+if(!require(dplyr)){
+    install.packages("dplyr")
+    library(dplyr)
+} else {
+    library(dplyr)
+}
 
-NonMotorDiff <- NonMotorDiff[-c(451,1063),] # remove 2 dup records
+NonMotorDiff <- NonMotorDiff %>%
+    arrange(patno, event_id, desc(jlo_totraw)) %>%
+    group_by(patno, event_id) %>%
+    slice(1) %>%
+    as.data.frame()
 
+
+## Convert differences from wide to long
 NonMotorV <- reshape(
-    NonMotorDiff,
+    subset(NonMotorDiff, substr(event_id, 1, 1) == "V",
+           select = c(patno, event_id,
+                      jlo_totraw_diff,      
+                      jlo_totcalc_diff,          
+                      dvs_jlo_mssa_diff,         
+                      dvs_jlo_mssae_diff,        
+                      ess_total_diff,            
+                      gds_total_diff,            
+                      dvt_total_recall_diff,
+                      dvt_delayed_recall_diff, 
+                      dvt_retention_diff,        
+                      dvt_recog_disc_index_diff, 
+                      lns_totraw_diff,           
+                      dvs_lns_diff,    
+                      mcatot_diff, 
+                      quip_total_diff,           
+                      rem_total_diff,             
+                      scopa_total_diff,          
+                      dvt_sftanim_diff,          
+                      dvs_sftanim_diff,          
+                      stai_total_diff,           
+                      dvsd_sdm_diff,             
+                      dvt_sdm_diff,              
+                      upsit_total_diff)
+    ),
     idvar = "patno",
     timevar = "event_id",
     direction = "wide"

@@ -67,34 +67,41 @@ Temp[seq.names(Temp, "pdsurg", "pdslunk")] <- lapply(Temp[seq.names(Temp, "pdsur
 
 MedHx <- Temp
 
+
 ## Baseline assessments
 MedHxBL <- subset(MedHx, event_id == "BL", -event_id)
 
+
 ## Change in assessments from baseline to follow-up visits
-Baseline <- MedHxBL
-names(Baseline)[-1] <- paste0(names(Baseline[-1]), "bl")
+baseline <- function(x, id) {
+    i <- which(id == "BL")
+    if(length(i)) x[i] else NA
+}
 
-Temp <- join(subset(MedHx, substr(event_id, 1, 1) == "V"),
-             Baseline,
-             by = "patno")
-
-MedHxDiff <- with(Temp, {
-    data.frame(
-        patno = patno,
-        event_id = event_id,
-        wgtkg_diff = wgtkg - wgtkgbl,
-        tempc_diff = tempc - tempcbl,
-        syssup_diff = syssup - syssupbl,
-        diasup_diff = diasup - diasupbl,
-        hrsup_diff = hrsup - hrsupbl,
-        sysstnd_diff = sysstnd - sysstndbl,
-        diastnd_diff = diastnd - diastndbl,
-        hrstnd_diff = hrstnd - hrstndbl
-    )
-})
+MedHxDiff <- ddply(
+    MedHx, .(patno), mutate,
+    wgtkg_diff = wgtkg - baseline(wgtkg, event_id),
+    tempc_diff = tempc - baseline(tempc, event_id),
+    syssup_diff = syssup - baseline(syssup, event_id),
+    diasup_diff = diasup - baseline(diasup, event_id),
+    hrsup_diff = hrsup - baseline(hrsup, event_id),
+    sysstnd_diff = sysstnd - baseline(sysstnd, event_id),
+    diastnd_diff = diastnd - baseline(diastnd, event_id),
+    hrstnd_diff = hrstnd - baseline(hrstnd, event_id)
+)
 
 MedHxV <- reshape(
-    MedHxDiff,
+    subset(MedHxDiff, substr(event_id, 1, 1) == "V",
+           select = c(patno, event_id,
+                      wgtkg_diff,
+                      tempc_diff,
+                      syssup_diff,
+                      diasup_diff,
+                      hrsup_diff,
+                      sysstnd_diff,
+                      diastnd_diff,
+                      hrstnd_diff)
+    ),
     idvar = "patno",
     timevar = "event_id",
     direction = "wide"
