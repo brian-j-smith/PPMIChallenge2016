@@ -1,15 +1,17 @@
 ## Merge PD diagnosis data with enrollment data and baseline
 str(PDFEAT)
 str(RANDOM)
+str(VITAL)
 
 table(PDFEAT$event_id, useNA = "always")
 table(RANDOM$event_id, useNA = "always")
 
-PDFEATSUB <- subset(PDFEAT, event_id %in% c("SC", "BL"))
-
-Temp <-  merge(
-    PDFEATSUB[c("patno", "pddxdt")],
-    RANDOM[c("patno", "birthdt", "enrolldt")],
+Temp <-  join_all(
+    list(
+        subset(PDFEAT, event_id %in% c("SC", "BL"), select = c(patno, pddxdt)),
+        subset(RANDOM, select = c(patno, birthdt)),
+        subset(VITAL, event_id == "BL", select = c(patno, infodt))
+    ),
     by = "patno"
 )
 
@@ -30,15 +32,15 @@ fix_date <- function(x){
 
 Temp$pddxdt_new <- fix_date(Temp$pddxdt)
 Temp$birthdt_new <- fix_date(Temp$birthdt)
-Temp$enrolldt_new <- fix_date(Temp$enrolldt)
+Temp$infodt_new <- fix_date(Temp$infodt)
 
 
 ## Compute age at baseline and time from PD diagnosis to enrollment (both in years)
 Enroll <- within(Temp, {
-    age_at_enroll <- as.numeric(floor((enrolldt_new - birthdt_new)/365.25))
-    time_dx_enroll <- as.numeric((enrolldt_new - pddxdt_new)/365.25)
+    age_at_bl <- as.numeric(floor((infodt_new - birthdt_new)/365.25))
+    time_dx_bl <- as.numeric((infodt_new - pddxdt_new)/365.25)
 })
-Enroll <- Enroll[c("patno", "age_at_enroll", "time_dx_enroll")]
+Enroll <- Enroll[c("patno", "age_at_bl", "time_dx_bl")]
 
 str(Enroll)
 summary(Enroll)
