@@ -41,18 +41,21 @@ pecn_vars <- potent_pecn_vars[pecn_vars_idx]
 byvars <- c("patno", "event_id")
 Temp <- join_all(
     list(
-        CLINDX[c(byvars, seq.names(CLINDX, "dcnomtr", "dxfnathx"))],
-        PENEURO[c(byvars, peneuro_vars)],
-        PECN[c(byvars, pecn_vars)],
-        PDFEAT[c(byvars, "domside", "dxbrady", "dxothsx", "dxposins",
+        CLINDX[c(byvars, "infodt", seq.names(CLINDX, "dcnomtr", "dxfnathx"))],
+        PENEURO[c(byvars, "infodt", peneuro_vars)],
+        PECN[c(byvars, "infodt", pecn_vars)],
+        PDFEAT[c(byvars, "infodt", "domside", "dxbrady", "dxothsx", "dxposins",
                                   "dxrigid", "dxtremor")],
-        SURGPD[c(byvars, "pdsurg", "pdsurgtp", seq.names(SURGPD, "pdsurgsd", "pdslunk"))],
-        VITAL[c(byvars, seq.names(VITAL, "wgtkg", "tempc"),
+        SURGPD[c(byvars, "infodt", "pdsurg", "pdsurgtp", seq.names(SURGPD, "pdsurgsd", "pdslunk"))],
+        VITAL[c(byvars, "infodt", seq.names(VITAL, "wgtkg", "tempc"),
                 seq.names(VITAL, "syssup", "hrstnd"))]
     ),
     by = byvars,
     type = "full"
 )
+
+Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
+Temp$infodt <- NULL
 
 pdfeat_vars <- c("domside", "dxbrady", "dxothsx", 
                  "dxposins", "dxrigid", "dxtremor")

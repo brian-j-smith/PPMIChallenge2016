@@ -29,23 +29,26 @@ table(MOCA$event_id, useNA = "always")
 byvars <- c("patno", "event_id")
 Temp <- join_all(
     list(
-        subset(LINEORNT, select = c(patno, event_id, jlo_totraw:dvs_jlo_mssae)),
-        subset(COGCATG, select = c(patno, event_id, cogdecln:cogdxcl)),
-        subset(EPWORTH, select = c(patno, event_id, ess1:ess8)),
-        subset(GDSSHORT, select = c(patno, event_id, gdssatis:gdsbeter)),
-        subset(HVLT, select = c(patno, event_id, dvt_total_recall:dvt_recog_disc_index)),
-        subset(LNSPD, select = c(patno, event_id, lns_totraw, dvs_lns)),
-        subset(MOCA, select = c(patno, event_id, mcatot)),
-        subset(QUIPCS, select = c(patno, event_id, tmgamble:cntrldsm)),
-        subset(REMSLEEP, select = c(patno, event_id, drmvivid:brninfm)),
-        subset(SCOPAAUT, select = c(patno, event_id, scau1:scau23, scau24, scau25)),
-        subset(SFT, select = c(patno, event_id, vltanim, vltveg, vltfruit, dvs_sftanim, dvt_sftanim)),
-        subset(STAI, select = c(patno, event_id, staiad1:staiad40)),
-        subset(SDM, select = c(patno, event_id, dvsd_sdm, dvt_sdm)),
-        subset(UPSIT, select = c(patno, event_id, upsitbk1:upsitbk4))
+        subset(LINEORNT, select = c(patno, event_id, infodt, jlo_totraw:dvs_jlo_mssae)),
+        subset(COGCATG, select = c(patno, event_id, infodt, cogdecln:cogdxcl)),
+        subset(EPWORTH, select = c(patno, event_id, infodt, ess1:ess8)),
+        subset(GDSSHORT, select = c(patno, event_id, infodt, gdssatis:gdsbeter)),
+        subset(HVLT, select = c(patno, event_id, infodt, dvt_total_recall:dvt_recog_disc_index)),
+        subset(LNSPD, select = c(patno, event_id, infodt, lns_totraw, dvs_lns)),
+        subset(MOCA, select = c(patno, event_id, infodt, mcatot)),
+        subset(QUIPCS, select = c(patno, event_id, infodt, tmgamble:cntrldsm)),
+        subset(REMSLEEP, select = c(patno, event_id, infodt, drmvivid:brninfm)),
+        subset(SCOPAAUT, select = c(patno, event_id, infodt, scau1:scau23, scau24, scau25)),
+        subset(SFT, select = c(patno, event_id, infodt, vltanim, vltveg, vltfruit, dvs_sftanim, dvt_sftanim)),
+        subset(STAI, select = c(patno, event_id, infodt, staiad1:staiad40)),
+        subset(SDM, select = c(patno, event_id, infodt, dvsd_sdm, dvt_sdm)),
+        subset(UPSIT, select = c(patno, event_id, infodt, upsitbk1:upsitbk4))
     ),
     by = byvars
 )
+
+Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
+Temp$infodt <- NULL
 
 
 ## compute derived variables
@@ -166,6 +169,8 @@ NonMotorDiff <- NonMotorDiff %>%
     group_by(patno, event_id) %>%
     slice(1) %>%
     as.data.frame()
+
+detach(package:dplyr)
 
 
 ## Convert differences from wide to long
