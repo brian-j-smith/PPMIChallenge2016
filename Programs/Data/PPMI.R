@@ -33,6 +33,7 @@ ind_av133_sbr <- read.ppmi("Data/Imaging/AV-133_SBR_Results.csv")
 DATSCAN <- read.ppmi("Data/Imaging/DaTscan_Imaging.csv")
 ind_spect_sbr <- read.ppmi("Data/Imaging/DaTscan_Striatal_Binding_Ratio_Results.csv")
 ind_datscan_source_data <- read.ppmi("Data/Imaging/ind_dat_source_data.csv")
+ind_fbb_results <- read.ppmi("Data/Imaging/FBB_Analysis_Data.csv")
 ind_mri_source_data <- read.ppmi("Data/Imaging/ind_mri_source_data.csv")
 MRI <- read.ppmi("Data/Imaging/Magnetic_Resonance_Imaging.csv")
 
@@ -104,14 +105,14 @@ save("AE", "AVELIG", "AVIMAG", "Biospecimen_Analysis", "CLINDX",
      "CLINLAB", "COGCATG", "COGTIME", "CONCL", "CONMED", "COVANCE", 
      "CURRCOND", "DATSCAN", "DIAGFEAT", "DNA", "EPWORTH", "FAMHXPD", 
      "FOUNDINF", "GDSSHORT", "GENPHYEX", "HVLT", "INCIDENTS", "ind_av133_metadata", 
-     "ind_av133_sbr", "ind_datscan_source_data", "ind_mri_source_data", 
-     "ind_spect_sbr", "ind_upsit", "INEX", "KINETICS", "LAB", "LINEORNT", 
-     "LNSPD", "LUMBAR", "MHXGEN", "MOCA", "MODSEADL", "MRI", "MUTRSLT", 
-     "NUPDRS1", "NUPDRS1P", "NUPDRS2P", "NUPDRS3", "NUPDRS4", "PASEHSWK", 
-     "PASELS", "PATIENT_STATUS", "PDFEAT", "PDMEDUSE", "PECN", "PENEURO", 
-     "PREGNANC", "PRIMDXPD", "PRODDIAG", "QUIPCS", "RAD", "RANDOM", 
-     "REMSLEEP", "SCOPAAUT", "SCREEN", "SDM", "SFT", "SIG", "SITE_NAMES", 
-     "SKBIO", "SKBIOELG", "SOCIOECO", "ST_CATALOG", "STAI", "SURGPD", 
-     "TAPCONCL", "TAPELIG", "TAPOPDM", "TAPUSE", "UPSIT", "VITAL", 
-     "WHOLEBLD", "read.ppmi",
+     "ind_av133_sbr", "ind_datscan_source_data", "ind_fbb_results", 
+     "ind_mri_source_data", "ind_spect_sbr", "ind_upsit", "INEX", 
+     "KINETICS", "LAB", "LINEORNT", "LNSPD", "LUMBAR", "MHXGEN", "MOCA", 
+     "MODSEADL", "MRI", "MUTRSLT", "NUPDRS1", "NUPDRS1P", "NUPDRS2P", 
+     "NUPDRS3", "NUPDRS4", "PASEHSWK", "PASELS", "PATIENT_STATUS", 
+     "PDFEAT", "PDMEDUSE", "PECN", "PENEURO", "PREGNANC", "PRIMDXPD", 
+     "PRODDIAG", "QUIPCS", "RAD", "RANDOM", "read.ppmi", "REMSLEEP", 
+     "SCOPAAUT", "SCREEN", "SDM", "SFT", "SIG", "SITE_NAMES", "SKBIO", 
+     "SKBIOELG", "SOCIOECO", "ST_CATALOG", "STAI", "SURGPD", "TAPCONCL", 
+     "TAPELIG", "TAPOPDM", "TAPUSE", "UPSIT", "VITAL", "WHOLEBLD",
      file="Data/PPMI.RData")
