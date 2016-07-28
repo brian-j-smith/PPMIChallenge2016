@@ -31,7 +31,7 @@ Temp <- join_all(
     list(
         subset(LINEORNT, select = c(patno, event_id, jlo_totraw:dvs_jlo_mssae)),
         subset(COGCATG, select = c(patno, event_id, cogdecln:cogdxcl)),
-        subset(EPWORTH, select = c(patno, event_id, ess1:ess8)),
+        subset(EPWORTH, select = c(patno, event_id, infodt, ess1:ess8)), ## using infodt from here
         subset(GDSSHORT, select = c(patno, event_id, gdssatis:gdsbeter)),
         subset(HVLT, select = c(patno, event_id, dvt_total_recall:dvt_recog_disc_index)),
         subset(LNSPD, select = c(patno, event_id, lns_totraw, dvs_lns)),
@@ -46,6 +46,9 @@ Temp <- join_all(
     ),
     by = byvars
 )
+
+Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
+Temp$infodt <- NULL
 
 
 ## compute derived variables
@@ -166,6 +169,8 @@ NonMotorDiff <- NonMotorDiff %>%
     group_by(patno, event_id) %>%
     slice(1) %>%
     as.data.frame()
+
+detach(package:dplyr)
 
 
 ## Convert differences from wide to long

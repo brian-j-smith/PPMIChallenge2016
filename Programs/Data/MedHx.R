@@ -47,12 +47,15 @@ Temp <- join_all(
         PDFEAT[c(byvars, "domside", "dxbrady", "dxothsx", "dxposins",
                                   "dxrigid", "dxtremor")],
         SURGPD[c(byvars, "pdsurg", "pdsurgtp", seq.names(SURGPD, "pdsurgsd", "pdslunk"))],
-        VITAL[c(byvars, seq.names(VITAL, "wgtkg", "tempc"),
-                seq.names(VITAL, "syssup", "hrstnd"))]
+        VITAL[c(byvars, "infodt", seq.names(VITAL, "wgtkg", "tempc"),
+                seq.names(VITAL, "syssup", "hrstnd"))] ## using infodt from here
     ),
     by = byvars,
     type = "full"
 )
+
+Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
+Temp$infodt <- NULL
 
 pdfeat_vars <- c("domside", "dxbrady", "dxothsx", 
                  "dxposins", "dxrigid", "dxtremor")
