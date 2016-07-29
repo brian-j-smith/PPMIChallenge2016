@@ -5,20 +5,17 @@ str(NUPDRS2P)
 str(NUPDRS3)
 str(MODSEADL)
 
-Temp <- join_all(
-  list(
-    subset(NUPDRS1, select = c(patno, event_id, infodt, np1cog:np1dds)),
-    subset(NUPDRS1P, select = c(patno, event_id, np1slpn:np1fatg)),
-    subset(NUPDRS2P, select = c(patno, event_id, np2spch:np2frez)),
-    subset(NUPDRS3, pag_name == "NUPDRS3",
-                    select = c(patno, event_id, np3spch:np3rtcon, nhy, pd_med_use)),
-    subset(MODSEADL, select = c(patno, event_id, mseadlg))
-  ),
-  by = c("patno", "event_id")
+Temp <- join.ppmi(
+  subset(NUPDRS1, select = c(patno, event_id, infodt, np1cog:np1dds)),
+  subset(NUPDRS1P, select = c(patno, event_id, np1slpn:np1fatg)),
+  subset(NUPDRS2P, select = c(patno, event_id, np2spch:np2frez)),
+  subset(NUPDRS3, pag_name == "NUPDRS3",
+                  select = c(patno, event_id, np3spch:np3rtcon, nhy, pd_med_use)),
+  subset(MODSEADL, select = c(patno, event_id, mseadlg)),
+  by = c("patno", "event_id"),
+  select = -infodt,
+  ST2V = TRUE
 )
-
-Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
-Temp$infodt <- NULL
 
 Motor <- within(Temp, {
   np1total <- rowSums(subset(Temp, select = c(np1cog:np1dds, np1slpn:np1fatg)))
