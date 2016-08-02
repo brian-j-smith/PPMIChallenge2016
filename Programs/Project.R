@@ -65,8 +65,11 @@ dropfactors <- function(data) {
 }
 
 
-join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE) {
+join.ppmi <- function(..., by=NULL, subset, select, na.add=FALSE, ST2V=FALSE) {
   X <- join_all(list(...), by=by)
+  if(ST2V) {
+    X <- ddply(X, .(patno), mutate, event_id = ST2V(event_id, infodt))
+  }
   Xsub <- droplevels(do.call(base::subset, list(X, subset=substitute(subset),
                                                 select=substitute(select))))
   f <- colwise(function(x) if(na.add && is.factor(x)) addNA(x, ifany=TRUE) else x)
@@ -101,12 +104,13 @@ seq.names <- function(x, from, to) {
 }
 
 
-ST2V <- function(id, dt) {
-  i <- which(id == "BL")
-  j <- which(id == "ST")
+ST2V <- function(event_id, infodt) {
+  i <- which(event_id == "BL")
+  j <- which(event_id == "ST")
   if(length(i) && length(j)) {
-    d <- c(1, 12) %*% (matrix(as.numeric(unlist(strsplit(dt, "/"))), nrow=2) -
-                         as.numeric(unlist(strsplit(dt[i], "/"))))
+    d <- c(1, 12) %*%
+      (matrix(as.numeric(unlist(strsplit(infodt, "/"))), nrow=2) -
+         as.numeric(unlist(strsplit(infodt[i], "/"))))
     
     visits <- c(V01=3, V02=6, V03=9, V04=12, V05=18, V06=24, V07=30, V08=36,
                 V09=42, V10=48, V11=54, V12=60)
@@ -119,7 +123,7 @@ ST2V <- function(id, dt) {
     })
     
     v <- vid[j]
-    if(!(v %in% id)) id[j] <- v
+    if(!(v %in% event_id)) event_id[j] <- v
   }
-  id
+  event_id
 }
