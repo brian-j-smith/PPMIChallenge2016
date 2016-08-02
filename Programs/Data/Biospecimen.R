@@ -206,11 +206,12 @@ Temp_bio = within(Bio_wide, {
 
 
 ### remove columns where raw data is not needed 
-col_to_remove = c(seq.names(Temp_bio, "testvalue.GLT25D1", "testvalue.ZNF746"), 
-                  seq.names(Temp_bio,"testvalue.SOD2", "m"), 
+col_to_remove = c(seq.names(Temp_bio, "testvalue.DHPR", "testvalue.Total tau"), 
+                  seq.names(Temp_bio,"testvalue.ZNF746", "testvalue.ApoE Genotype"), 
                   seq.names(Temp_bio, "testvalue.rs114138760", "testvalue.rs55785911"), 
-                  "testvalue.ApoE Genotype", "testvalue.SNCA_multiplication",
-                  "event_id")
+                   "testvalue.SNCA_multiplication",
+                  seq.names(Temp_bio, "testvalue.SOD2", "testvalue.APOE GENOTYPE"),
+                  "s", "m")
 
 Temp_bio <- Temp_bio[, !(colnames(Temp_bio) %in% col_to_remove)]
 
