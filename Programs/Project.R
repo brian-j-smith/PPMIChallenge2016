@@ -9,15 +9,15 @@ remove(list=objects())
 
 
 ## PPMI source datasets
+load("Data/PPMI.RData")
+load("Data/Biospecimen.RData")
 load("Data/Enroll.RData")
 load("Data/Imaging.RData")
 load("Data/MedHx.RData")
 load("Data/Motor.RData")
 load("Data/NonMotor.RData")
 load("Data/PDMedUse.RData")
-load("Data/PPMI.RData")
 load("Data/Subjects.RData")
-load("Data/Biospecimen.RData")
 
 
 ## Required analysis libraries
