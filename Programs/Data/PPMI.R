@@ -31,10 +31,10 @@ ind_av133_metadata <- read.ppmi("Data/Imaging/AV-133_Image_Metadata.csv")
 AVIMAG <- read.ppmi("Data/Imaging/AV-133_Imaging.csv")
 ind_av133_sbr <- read.ppmi("Data/Imaging/AV-133_SBR_Results.csv")
 DATSCAN <- read.ppmi("Data/Imaging/DaTscan_Imaging.csv")
-ind_spect_sbr <- read.ppmi("Data/Imaging/DaTscan_Striatal_Binding_Ratio_Results.csv")
-ind_datscan_source_data <- read.ppmi("Data/Imaging/ind_dat_source_data.csv")
+ind_spect_sbr <- read.ppmi("Data/Imaging/DATScan_Analysis.csv")
+ind_datscan_source_data <- read.ppmi("Data/Imaging/SPECT_Scan_Information_Source_Document.csv")
 ind_fbb_results <- read.ppmi("Data/Imaging/FBB_Analysis_Data.csv")
-ind_mri_source_data <- read.ppmi("Data/Imaging/ind_mri_source_data.csv")
+ind_mri_source_data <- read.ppmi("Data/Imaging/MRI_Imaging_Data_Transfer_Information_Source_Document.csv")
 MRI <- read.ppmi("Data/Imaging/Magnetic_Resonance_Imaging.csv")
 
 ## Medical History
