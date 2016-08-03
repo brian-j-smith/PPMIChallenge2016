@@ -6,17 +6,30 @@ source("Programs/Analysis/Control.R")
 
 ## Analytic dataset
 
-MotorV$np1total_auc.V06 <- with(MotorV,
-   auc.change(cbind(0, np1total_diff.V04, np1total_diff.V06),
-              c(0, 12, 24) / 24)
-)
-  
-MotorV$np1total_auc.V08 <- with(MotorV,
-  auc.change(cbind(0, np1total_diff.V04, np1total_diff.V06, np1total_diff.V08),
-             c(0, 12, 24, 36) / 36)
-)
-
 Dataset <- join(BaselinePD, MotorV, by = "patno")
+
+pca <- princomp(na.omit(Dataset[c("np1total", "np2total", "np3total")]))
+pc1 <- pca$loadings[,1]
+Dataset <- within(Dataset, {
+  np1total_auc.V06 <- auc.change(
+    cbind(0, np1total_diff.V04, np1total_diff.V06),
+    c(0, 12, 24) / 24
+  )
+  np1total_auc.V06 <- auc.change(
+    cbind(0, np1total_diff.V04, np1total_diff.V06, np1total_diff.V08),
+    c(0, 12, 24, 36) / 24
+  )
+  nptotal_pca.V04 <- as.vector(
+    cbind(np1total_diff.V04, np2total_diff.V04, np3total_diff.V04) %*% pc1
+  )
+  nptotal_pca.V06 <- as.vector(
+    cbind(np1total_diff.V06, np2total_diff.V06, np3total_diff.V06) %*% pc1
+  )
+  nptotal_pca.V08 <- as.vector(
+    cbind(np1total_diff.V08, np2total_diff.V08, np3total_diff.V08) %*% pc1
+  )
+})
+
 str(Dataset)
 summary(Dataset)
 
@@ -25,10 +38,12 @@ summary(Dataset)
 
 outVars <- c(
   "np1total_diff.V04", "np2total_diff.V04", "np3total_diff.V04", "nptotal_diff.V04",
-  "np1total_diff.V06", "np2total_diff.V06", "np3total_diff.V06", "nptotal_diff.V06",
-  "np1total_auc.V06", "np1total_auc.V08"
+  "np1total_diff.V06", "np2total_diff.V06", "np3total_diff.V06", "nptotal_diff.V06"
 )
-#outVars <- "np1total_diff.V04"
+# outVars <- c("np1total_auc.V06", "np1total_auc.V08")
+# outVars <- c("nptotal_pca.V04", "nptotal_pca.V06", "nptotal_pca.V08")
+# outVars <- "cut(np1total_diff.V04, c(-Inf, -1.5, 1.5, Inf))"
+# outVars <- "np1total_diff.V04"
 
 trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "plsRglm", "rf", "svmLinear")
 sbfMethods <- c("glm")
