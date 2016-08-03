@@ -42,7 +42,7 @@ Imaging <- within(Temp, {
 ImagingBL <- subset(Imaging, event_id == "SC", -event_id)
 
 ## Change in assessments from baseline to follow-up visits
-Baseline <- ImagingBL[c("patno", seq.names(ImagingBL, "caudate_r", "lputpost.s"))]
+Baseline <- ImagingBL[c("patno", seq.names(ImagingBL, "caudate_r", "meancaudate"))]
 Baseline <- rename(Baseline, c("rcaud.s" = "rcaud.s_bl",
                                "rputant.s" = "rputant.s_bl",
                                "rputpost.s" = "rputpost.s_bl",
@@ -52,7 +52,13 @@ Baseline <- rename(Baseline, c("rcaud.s" = "rcaud.s_bl",
                                "caudate_r" = "caudate_r_bl", 
                                "caudate_l" = "caudate_l_bl", 
                                "putamen_r" = "putamen_r_bl",
-                               "putamen_l" = "putamen_l_bl"
+                               "putamen_l" = "putamen_l_bl", 
+                               "meancaudate" = "meancaudate_bl", 
+                               "meanputamen" = "meanputamen_bl", 
+                               "meanstriatum" = "meanstriatum_bl", 
+                               "countdensityratio" = "countdensityratio_bl", 
+                               "aicaudate" = "aicaudate_bl",
+                               "aiputamen" = "aiputamen_bl"
                                ))
 
 
@@ -73,7 +79,13 @@ ImagingDiff <- with(Temp, {
     caudate_r_diff = caudate_r - caudate_r_bl,
     caudate_l_diff = caudate_l - caudate_l_bl,
     putamen_r_diff = putamen_r - putamen_r_bl, 
-    putamen_l_diff = putamen_l - putamen_l_bl
+    putamen_l_diff = putamen_l - putamen_l_bl,
+    meancaudate_diff = meancaudate - meancaudate_bl,
+    meanputamen_diff = meanputamen - meanputamen_bl,
+    meanstriatum_diff = meanstriatum - meanstriatum_bl, 
+    countdensityratio_diff = countdensityratio - countdensityratio_bl, 
+    aicaudate_diff = aicaudate - aicaudate_bl, 
+    aiputamen_diff = aiputamen - aiputamen_bl
   )
 })
 
@@ -81,7 +93,8 @@ ImagingV <- reshape(
   ImagingDiff,
   v.names = c("rcaud.s_diff", "rputant.s_diff", "rputpost.s_diff", "lcaud.s_diff", 
               "lputant.s_diff", "lputpost.s_diff", "caudate_r_diff", "caudate_l_diff", 
-              "putamen_r_diff", "putamen_l_diff"),
+              "putamen_r_diff", "putamen_l_diff", "meancaudate_diff", "meanputamen_diff", 
+              "meanstriatum_diff", "countdensityratio_diff", "aicaudate_diff", "aiputamen_diff"),
   idvar = "patno",
   timevar = "event_id",
   direction = "wide"
