@@ -52,13 +52,14 @@ Baseline <- rename(Baseline, c("rcaud.s" = "rcaud.s_bl",
                                "caudate_r" = "caudate_r_bl", 
                                "caudate_l" = "caudate_l_bl", 
                                "putamen_r" = "putamen_r_bl",
-                               "putamen_l" = "putamen_l_bl", 
-                               "meancaudate" = "meancaudate_bl", 
-                               "meanputamen" = "meanputamen_bl", 
-                               "meanstriatum" = "meanstriatum_bl", 
+                               "putamen_l" = "putamen_l_bl",
+                               "aiputamen" = "aiputamen_bl",
+                               "aicaudate" = "aicaudate_bl", 
                                "countdensityratio" = "countdensityratio_bl", 
-                               "aicaudate" = "aicaudate_bl",
-                               "aiputamen" = "aiputamen_bl"
+                               "meanstriatum" = "meanstriatum_bl",
+                               "meanputamen" = "meanputamen_bl",
+                               "meancaudate" = "meancaudate_bl"
+                    
                                ))
 
 
@@ -80,12 +81,12 @@ ImagingDiff <- with(Temp, {
     caudate_l_diff = caudate_l - caudate_l_bl,
     putamen_r_diff = putamen_r - putamen_r_bl, 
     putamen_l_diff = putamen_l - putamen_l_bl,
-    meancaudate_diff = meancaudate - meancaudate_bl,
-    meanputamen_diff = meanputamen - meanputamen_bl,
-    meanstriatum_diff = meanstriatum - meanstriatum_bl, 
-    countdensityratio_diff = countdensityratio - countdensityratio_bl, 
+    aiputamen_diff = aiputamen - aiputamen_bl, 
     aicaudate_diff = aicaudate - aicaudate_bl, 
-    aiputamen_diff = aiputamen - aiputamen_bl
+    countdensityratio_diff = countdensityratio - countdensityratio_bl, 
+    meanstriatum_diff = meanstriatum - meanstriatum_bl, 
+    meanputamen_diff = meanputamen - meanputamen_bl, 
+    meancaudate_diff = meancaudate - meancaudate_bl
   )
 })
 
