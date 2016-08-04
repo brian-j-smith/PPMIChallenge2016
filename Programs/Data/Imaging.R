@@ -23,6 +23,7 @@ Temp <- join.ppmi(
   subset(ind_spect_sbr, select = c(patno, event_id, caudate_r, caudate_l, putamen_r, putamen_l)),
   subset(ind_av133_sbr, select = c(patno, event_id, infodt, rcaud.s, rputant.s, 
                                    rputpost.s, lcaud.s, lputant.s, lputpost.s)), 
+ # subset(ind_fbb_results, select = c(patno, event_id, cerebellar_cortex_r:mean_whole_cerebellum)),
   by = c("patno", "event_id"), 
   select = -infodt, 
   ST2V = TRUE
@@ -94,8 +95,9 @@ ImagingV <- reshape(
   ImagingDiff,
   v.names = c("rcaud.s_diff", "rputant.s_diff", "rputpost.s_diff", "lcaud.s_diff", 
               "lputant.s_diff", "lputpost.s_diff", "caudate_r_diff", "caudate_l_diff", 
-              "putamen_r_diff", "putamen_l_diff", "meancaudate_diff", "meanputamen_diff", 
-              "meanstriatum_diff", "countdensityratio_diff", "aicaudate_diff", "aiputamen_diff"),
+              "putamen_r_diff", "putamen_l_diff", "aiputamen_diff", "aicaudate_diff", 
+              "countdensityratio_diff", "meanstriatum_diff", "meanputamen_diff", "meancaudate_diff"
+        ),
   idvar = "patno",
   timevar = "event_id",
   direction = "wide"
