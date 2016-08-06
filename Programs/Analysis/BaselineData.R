@@ -1,5 +1,6 @@
 BaselinePD <- dropfactors(join.ppmi(
   SubjectsBL, Enroll, MotorBL, NonMotorBL, MedHxBL, ImagingBL, BiospecimenBL,
+  PDMedUseV,
   by = "patno",
   subset = (recruitment_cat == "PD" & enroll_status == "Enrolled"),
   select = c(patno, gender:bioparpd,
@@ -10,7 +11,8 @@ BaselinePD <- dropfactors(join.ppmi(
              stai_total, dvt_sdm, upsit_total,
              aiputamen:meancaudate,
              `lsires.RBC Morphology`:`lsires.Urea Nitrogen`, ApoE,
-             rs55785911:rs114138760)
+             rs55785911:rs114138760,
+             pd_med_any.V04, pd_med_any.V06, pd_med_any.V08)
 ))
 str(BaselinePD)
 summary(BaselinePD)
