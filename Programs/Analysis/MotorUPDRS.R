@@ -37,8 +37,14 @@ summary(Dataset)
 ## Model fitting
 
 outVars <- c(
-  "np1total_diff.V04", "np2total_diff.V04", "np3total_diff.V04", "nptotal_diff.V04",
-  "np1total_diff.V06", "np2total_diff.V06", "np3total_diff.V06", "nptotal_diff.V06"
+  "MDS-UPDRS-I Change @ 1 Year" = "np1total_diff.V04",
+  "MDS-UPDRS-I Change @ 2 Year" = "np1total_diff.V06",
+  "MDS-UPDRS-II Change @ 1 Year" = "np2total_diff.V04",
+  "MDS-UPDRS-II Change @ 2 Year" = "np2total_diff.V06",
+  "MDS-UPDRS-III Change @ 1 Year" = "np3total_diff.V04",
+  "MDS-UPDRS-III Change @ 2 Year" = "np3total_diff.V06",
+  "MDS-UPDRS Change @ 1 Year" = "nptotal_diff.V04",
+  "MDS-UPDRS Change @ 2 Year" = "nptotal_diff.V06"
 )
 # outVars <- c("np1total_auc.V06", "np1total_auc.V08")
 # outVars <- c("nptotal_pca.V04", "nptotal_pca.V06", "nptotal_pca.V08")
@@ -58,3 +64,16 @@ for(outVar in outVars) {
                             sbfMethods=sbfMethods, rfeMethods=rfeMethods)
 
 }
+
+
+## Shiny trial design tool data
+
+OutcomeVars <- outVars
+
+OutcomeVals <- lapply(Fit, function(outVar) {
+  fit <- outVar$Train$glmnet
+  data.frame(obs = fit$trainingData$.outcome,
+             pred = round(predict(fit), 1))
+})
+
+save(OutcomeVars, OutcomeVals, file="shiny/Outcomes.RData")
