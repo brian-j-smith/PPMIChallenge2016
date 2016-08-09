@@ -87,7 +87,9 @@ ImagingDiff <- with(Temp, {
     countdensityratio_diff = countdensityratio - countdensityratio_bl, 
     meanstriatum_diff = meanstriatum - meanstriatum_bl, 
     meanputamen_diff = meanputamen - meanputamen_bl, 
-    meancaudate_diff = meancaudate - meancaudate_bl
+    meancaudate_diff = meancaudate - meancaudate_bl, 
+    meanputamen_perchange = (meanputamen - meanputamen_bl)/meanputamen_bl,
+    meanstriatum_perchange = (meanstriatum - meanstriatum_bl)/meanstriatum_bl
   )
 })
 
@@ -96,7 +98,8 @@ ImagingV <- reshape(
   v.names = c("rcaud.s_diff", "rputant.s_diff", "rputpost.s_diff", "lcaud.s_diff", 
               "lputant.s_diff", "lputpost.s_diff", "caudate_r_diff", "caudate_l_diff", 
               "putamen_r_diff", "putamen_l_diff", "aiputamen_diff", "aicaudate_diff", 
-              "countdensityratio_diff", "meanstriatum_diff", "meanputamen_diff", "meancaudate_diff"
+              "countdensityratio_diff", "meanstriatum_diff", "meanputamen_diff", "meancaudate_diff", 
+              "meanputamen_perchange", "meanstriatum_perchange"
         ),
   idvar = "patno",
   timevar = "event_id",
