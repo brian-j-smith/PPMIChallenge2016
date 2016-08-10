@@ -28,6 +28,10 @@ library(doSNOW)
 library(parallel)
 registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
+library(shiny)
+library(DT)
+library(ggvis)
+
 
 ## Install required caret packages
 if(!require(RANN)) install.packages("RANN")
