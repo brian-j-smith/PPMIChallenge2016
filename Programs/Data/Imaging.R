@@ -17,12 +17,15 @@ colnames(ind_av133_sbr)[2] = "event_id"
 
 #############################################
 
-Temp <- join_all(
-  list(
-    ind_spect_sbr[c(byvars, seq.names(ind_spect_sbr, "caudate_r", "putamen_l"))],
-    ind_av133_sbr[c(byvars, seq.names(ind_av133_sbr, "rcaud.s", "lputpost.s"))]
-  ),
-  by = byvars
+ind_av133_sbr = rename(ind_av133_sbr, c("scan_date" = "infodt"))
+
+Temp <- join.ppmi(
+  subset(ind_spect_sbr, select = c(patno, event_id, caudate_r, caudate_l, putamen_r, putamen_l)),
+  subset(ind_av133_sbr, select = c(patno, event_id, infodt, rcaud.s, rputant.s, 
+                                   rputpost.s, lcaud.s, lputant.s, lputpost.s)), 
+  by = c("patno", "event_id"), 
+  select = -infodt, 
+  ST2V = TRUE
 )
 
 Imaging <- within(Temp, {

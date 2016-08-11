@@ -9,14 +9,15 @@ remove(list=objects())
 
 
 ## PPMI source datasets
+load("Data/PPMI.RData")
+load("Data/Biospecimen.RData")
 load("Data/Enroll.RData")
 load("Data/Imaging.RData")
 load("Data/MedHx.RData")
 load("Data/Motor.RData")
 load("Data/NonMotor.RData")
-load("Data/PPMI.RData")
+load("Data/PDMedUse.RData")
 load("Data/Subjects.RData")
-load("Data/Biospecimen.RData")
 
 
 ## Required analysis libraries
@@ -26,6 +27,10 @@ library(caret)
 library(doSNOW)
 library(parallel)
 registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
+
+library(shiny)
+library(DT)
+library(ggvis)
 
 
 ## Install required caret packages
@@ -298,11 +303,14 @@ seq.names <- function(x, from, to) {
 ST2V <- function(event_id, infodt) {
   i <- which(event_id == "BL")
   j <- which(event_id == "ST")
+  
+  tomonths <- function(dt) {
+    sapply(strsplit(dt, "/"), function(x) sum(as.numeric(x) * c(1, 12)))
+  }
+  
   if(length(i) && length(j)) {
-    d <- c(1, 12) %*%
-      (matrix(as.numeric(unlist(strsplit(infodt, "/"))), nrow=2) -
-         as.numeric(unlist(strsplit(infodt[i], "/"))))
-    
+    d <- tomonths(infodt) - tomonths(infodt[i])
+
     visits <- c(V01=3, V02=6, V03=9, V04=12, V05=18, V06=24, V07=30, V08=36,
                 V09=42, V10=48, V11=54, V12=60)
     lwr <- visits - 1
