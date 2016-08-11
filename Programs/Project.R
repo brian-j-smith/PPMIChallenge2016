@@ -50,6 +50,197 @@ auc.change <- function(x, time) {
   auc
 }
 
+# Helper function for outcome.rate
+# This function measures "Increase in outcome score per visit"
+getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
+  nvisits <- sum(!is.na(x$time) & !is.na(x[outcome])) 
+  
+  if(nvisits < 2 ) return(NA)
+  
+  link <- ifelse(scale == 'absolute', 'identity', 'log')
+  
+  # Some fits don't converge when the scale is relative
+  fit <- suppressWarnings(
+    glm(x[[outcome]] ~ x$time, family = gaussian(link = link), 
+             start = c(1,0), control = list(maxit = 1000)))
+  
+  if(!fit$converged) {
+    warning(paste0('Fit not converged for patient ', x$patno[1], 
+                   '\nSlope assumed to be 0\n'))
+    print(x)
+    return(c(nvisits, 0, 1, NA, NA))
+  }
+  
+  # Delete NA values
+  x <- x[x$event_id == 'BL' | substr(x$event_id,1,1) == 'V',]
+  sp_ind <- NA # Indicates statistical significance
+  
+  ## Calculate Time to significant progression (if ttsp == T)
+
+  if(dim(x)[1] > 2 & ttsp) {
+    ttsp <- x$time[dim(x)[1]]
+    sp_ind <- 0 # Indicates statistical significance
+    for(j in 2:dim(x)[1]) {
+      fit.j <- lm(x[[outcome]][1:j] ~ x$time[1:j])
+      if(!is.na(fit.j$coef[2])) {
+        p.j <- summary(fit.j)$coef[2,4]
+        p.j <- ifelse(is.na(p.j), 1, p.j)
+        
+        if(p.j < sig.level & fit.j$coef[2] > 0) {
+          sp_ind <- 1
+          ttsp <- x$time[j]
+          t_ind <- j
+        }
+        
+        if(sp_ind == 1 & p.j > sig.level){
+          sp_ind <- 0
+          ttsp <- x$time[j]
+          t_ind <- 0
+        }
+      }
+    }
+  }
+  s <- suppressWarnings(summary(fit)$coef)
+  return(c(nvisits, unname(s[2,c(1,4)]), ttsp, sp_ind))
+}
+
+# outcome is string
+
+outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute', 
+                         patno_only = F, ...){
+  
+  outcome.df <- data[c('patno', 'event_id', outcome)]
+  outcome.df$time <- ifelse(outcome.df$event_id == 'BL', 0, NA)
+  outcome.df$time[outcome.df$event_id == 'V01'] <- 3
+  outcome.df$time[outcome.df$event_id == 'V02'] <- 6
+  outcome.df$time[outcome.df$event_id == 'V03'] <- 9
+  outcome.df$time[outcome.df$event_id == 'V04'] <- 12
+  outcome.df$time[outcome.df$event_id == 'V05'] <- 18
+  outcome.df$time[outcome.df$event_id == 'V06'] <- 24
+  outcome.df$time[outcome.df$event_id == 'V07'] <- 30
+  outcome.df$time[outcome.df$event_id == 'V08'] <- 36
+  outcome.df$time[outcome.df$event_id == 'V09'] <- 42
+  outcome.df$time[outcome.df$event_id == 'V10'] <- 48
+  outcome.df$time[outcome.df$event_id == 'V11'] <- 54
+  outcome.df$time[outcome.df$event_id == 'V12'] <- 60
+  
+  # NAs occur when a visit is not baseline or visit V
+  patnos <- unique(outcome.df$patno)
+  
+  # Sometimes only need patnos
+  if(patno_only) return(data.frame(patno = patnos))
+  
+  n <- length(patnos)
+
+  # Initialize vectors to contain patient level data
+  rates <- numeric(n)
+  p_rates <- numeric(n)
+  nvisits <- numeric(n)
+  ttsp <- numeric(n) # Time to significant progression
+  sp_ind <- numeric(n) # Time to significant progression indicator
+  time_on_study <- numeric(n)
+  
+  # Iterate through all patients, calculate slope
+  for(i in 1:n){
+    x <- outcome.df[outcome.df$patno == patnos[i],]
+    x <- x[!is.na(x$time),]
+    y <- (getSlope(x, outcome, scale))
+    nvisits[i] <- y[1]
+    rates[i] <- y[2]
+    p_rates[i] <- y[3]/2
+    ttsp[i] <- y[4]
+    sp_ind[i] <- y[5]
+    time_on_study[i] <- ifelse(!all(is.na(x$time)), max(x$time, na.rm = T), NA)
+  }
+  
+  # Calculate truncated rate
+  rates0 <- rates * (p_rates < sig.level)
+  rates0[rates == 0] <- 0
+  
+  # Return data frame
+  myOutcome <- data.frame(patno = patnos, rates = rates, rates0 = rates0, p_rates = p_rates, 
+                          ttsp = ttsp, sp_ind = sp_ind, time_on_study = time_on_study)
+}
+
+# Get Changepoint Survival outcome
+
+outcome.changepoint <- function(outcome, data, sig.level = .05, clin.sig.level = 3, 
+                                scale = 'absolute', plot = T, ...){
+  
+  outcome.df <- data[c('patno', 'event_id', outcome)]
+  outcome.df$time <- ifelse(outcome.df$event_id == 'BL', 0, NA)
+  outcome.df$time[outcome.df$event_id == 'V01'] <- 3
+  outcome.df$time[outcome.df$event_id == 'V02'] <- 6
+  outcome.df$time[outcome.df$event_id == 'V03'] <- 9
+  outcome.df$time[outcome.df$event_id == 'V04'] <- 12
+  outcome.df$time[outcome.df$event_id == 'V05'] <- 18
+  outcome.df$time[outcome.df$event_id == 'V06'] <- 24
+  outcome.df$time[outcome.df$event_id == 'V07'] <- 30
+  outcome.df$time[outcome.df$event_id == 'V08'] <- 36
+  outcome.df$time[outcome.df$event_id == 'V09'] <- 42
+  outcome.df$time[outcome.df$event_id == 'V10'] <- 48
+  outcome.df$time[outcome.df$event_id == 'V11'] <- 54
+  outcome.df$time[outcome.df$event_id == 'V12'] <- 60
+  
+  # NAs occur when a visit is not baseline or visit V, get rid of em
+  outcome.df <- outcome.df[outcome.df$event_id == 'BL' | substr(outcome.df$event_id,1,1) == 'V',]
+  outcome.df <- outcome.df[!is.na(outcome.df$event_id),]
+  
+  patnos <- unique(outcome.df$patno)
+  n <- length(patnos)
+  
+  # Initialize vectors to contain patient level data
+  nvisits <- numeric(n)
+  ttcsp <- numeric(n) # Time to significant progression
+  csp_ind <- numeric(n) # Time to significant progression indicator
+  effect.size <- numeric(n)
+
+  # Use poisson glm when scale = 'relative'
+  family <- ifelse(scale == 'absolute', 'gaussian', 'poisson')
+  
+  # For each patient...
+  for(i in 1:n){
+    x <- outcome.df[outcome.df$patno == patnos[i],]
+    outcome.i <- x[[outcome]]
+    ttcsp[i] <- 0
+    csp_ind[i] <- 0
+    
+    if(length(x$time) > 1 & !all(is.na(outcome.i))) {
+      ## For each time point for that patient
+      AICs <- numeric(length(x$time))
+      for(t in 1:length(x$time)) {
+        dichotomized_time <- x$time >= x$time[t]
+        fit.effect <- glm(outcome.i ~ dichotomized_time, family = family)
+        AICs[t] <- AIC(fit.effect)
+      }
+      cuttoff <- x$time[which.min(AICs)]
+      fit.effect <- lm(outcome.i ~ (x$time >= cuttoff))
+      nvisits[i] <- length(x$time)
+      ttcsp[i] <- max(x$time)
+      if(!is.na(coef(fit.effect)[2])) {
+
+        # Find minimum of onesided sig.level CI 
+        min.plausible <- suppressWarnings(confint(fit.effect, level = 1 - sig.level*2)[2,1])
+        min.plausible <- ifelse(is.nan(min.plausible), -Inf, min.plausible)
+        if(family == 'poisson') min.plausible <- exp(min.plausible)
+
+        # Would we reject null at clin.sig effect size?
+        csp_ind[i] <- (min.plausible > clin.sig.level)
+        ttcsp[i] <- cuttoff * (csp_ind[i]) + (!csp_ind[i]) * max(x$time)
+      }
+    }
+  }
+  if(plot) {
+    S <- survfit(Surv(ttcsp, csp_ind) ~ 1)
+    plot(S, main = paste('All cohorts sig level:',sig.level, 
+                         'clin.sig:', clin.sig.level,
+                         '\n scale:', scale) 
+         , ylab = outcome, ...)
+  }
+  myOutcome <- data.frame(patno = patnos, ttcsp = ttcsp, csp_ind = csp_ind)
+}
+
+
 
 dropfactors <- function(data) {
   i <- 1
