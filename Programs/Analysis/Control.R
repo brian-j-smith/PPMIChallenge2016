@@ -53,12 +53,12 @@ modelfit <- function(formula, data, dataMethods=c("zv", "nzv"),
                      ImpMethod="knnImpute", trMethods=NULL, sbfMethods=NULL,
                      rfeMethods=NULL, trControl=trControlCV(),
                      sbfControl=sbfControlCV(0.20), rfeControl=rfeControlCV(),
-                     tuneGrids=list(), tuneLengths=list(), prop.na = .2, ... ) {
+                     tuneGrids=list(), tuneLengths=list()) {
   Train <- list()
   SBF <- list()
   RFE <- list()
 
-  ModelData <- model.data(formula, data, method=dataMethods, prop.na = prop.na)
+  ModelData <- model.data(formula, data, method=dataMethods)
   
   ## Training
   for(trMethod in trMethods) {
@@ -71,7 +71,7 @@ modelfit <- function(formula, data, dataMethods=c("zv", "nzv"),
       preProcess = ImpMethod,
       trControl = trControl,
       tuneGrid = tuneGrids[[trMethod]],
-      tuneLength = tuneLength,...
+      tuneLength = tuneLength
     ), TRUE)
   }
 
