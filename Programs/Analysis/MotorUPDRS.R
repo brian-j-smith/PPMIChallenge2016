@@ -36,16 +36,17 @@ summary(Dataset)
 
 ## Model fitting
 
-outVars <- c(
-  "MDS-UPDRS-I Change @ 1 Year" = "np1total_diff.V04",
-  "MDS-UPDRS-I Change @ 2 Year" = "np1total_diff.V06",
-  "MDS-UPDRS-II Change @ 1 Year" = "np2total_diff.V04",
-  "MDS-UPDRS-II Change @ 2 Year" = "np2total_diff.V06",
-  "MDS-UPDRS-III Change @ 1 Year" = "np3total_diff.V04",
-  "MDS-UPDRS-III Change @ 2 Year" = "np3total_diff.V06",
-  "MDS-UPDRS Change @ 1 Year" = "nptotal_diff.V04",
-  "MDS-UPDRS Change @ 2 Year" = "nptotal_diff.V06"
+outVarsList <- list(
+  "MDS-UPDRS" = c("1-Year Change" = "nptotal_diff.V04",
+                  "2-Year Change" = "nptotal_diff.V06"),
+  "MDS-UPDRS-I" = c("1-Year Change" = "np1total_diff.V04",
+                    "2-Year Change" = "np1total_diff.V06"),
+  "MDS-UPDRS-II" = c("1-Year Change" = "np2total_diff.V04",
+                     "2-Year Change" = "np2total_diff.V06"),
+  "MDS-UPDRS-III" = c("1-Year Change" = "np3total_diff.V04",
+                      "2-Year Change" = "np3total_diff.V06")
 )
+
 # outVars <- c("np1total_auc.V06", "np1total_auc.V08")
 # outVars <- c("nptotal_pca.V04", "nptotal_pca.V06", "nptotal_pca.V08")
 # outVars <- "cut(np1total_diff.V04, c(-Inf, -1.5, 1.5, Inf))"
@@ -56,7 +57,7 @@ sbfMethods <- c("glm")
 rfeMethods <- c("glm")
 
 Fit <- list()
-for(outVar in outVars) {
+for(outVar in unlist(outVarsList)) {
   
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
@@ -68,7 +69,7 @@ for(outVar in outVars) {
 
 ## Shiny trial design tool data
 
-OutcomeVars <- outVars
+OutcomeVars <- outVarsList
 
 OutcomeVals <- lapply(Fit, function(outVar) {
   fit <- outVar$Train$glmnet
