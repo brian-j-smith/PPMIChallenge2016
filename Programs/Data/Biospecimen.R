@@ -65,6 +65,10 @@ col_to_remove = c(seq.names(BioBLSC, "gender", "event_id"),
 
 BioBLSC <- BioBLSC[, !(colnames(BioBLSC) %in% col_to_remove)]
 
+### sort alphabetically
+
+BioBLSC <- BioBLSC[order(BioBLSC$testname), ]
+
 ### divide into character and numeric sets
 
 test_with_dups = c("CSF Hemoglobin", "GLT25D1", "GUSB", "MON1B", "RPL13", 
@@ -114,19 +118,19 @@ Bio_wide = merge(Bio_wide1, Bio_wide2, by = "patno")
 
 #remove unnecessary vars and convert to numeric
 
-Bio_wide = Bio_wide[, -c(2,27)]
+Bio_wide = Bio_wide[, -c(2,27)] #get rid of type.y and type.x
 
-Bio_wide[, 27:33] <- sapply(Bio_wide[, 27:33], as.numeric)
-Bio_wide[, 67] <- sapply(Bio_wide[, 67], as.numeric)
-Bio_wide[, 69:78] <- sapply(Bio_wide[, 69:78], as.numeric)
+Bio_wide[, 28:38] <- sapply(Bio_wide[, 28:38], as.numeric) #up to SNPs
+Bio_wide[, 72:73] <- sapply(Bio_wide[, 72:73], as.numeric) #score and serum igf-1
+Bio_wide[, 75:79] <- sapply(Bio_wide[, 75:79], as.numeric) #SOD2 through ZNF160
 
 
 Bio_wide[, "ApoE"] = pmin(Bio_wide[,"testvalue.APOE GENOTYPE"], 
                         Bio_wide[,"testvalue.ApoE Genotype"], na.rm=TRUE)
 
-# which( colnames(Bio_wide)=="testvalue.SCORE" )
-# which( colnames(Bio_wide)=="testvalue.SOD2" )
-# which( colnames(Bio_wide)=="testvalue.PTBP1" )
+# which( colnames(Bio_wide)=="type.y" )
+# which( colnames(Bio_wide)=="testvalue.Apolipoprotein A1" )
+# which( colnames(Bio_wide)=="testvalue.ZNF160" )
 
 ### Nanostring Data
 
@@ -206,11 +210,13 @@ Temp_bio = within(Bio_wide, {
 
 
 ### remove columns where raw data is not needed 
-col_to_remove = c(seq.names(Temp_bio, "testvalue.DHPR", "testvalue.Total tau"), 
-                  seq.names(Temp_bio,"testvalue.ZNF746", "testvalue.ApoE Genotype"), 
-                  seq.names(Temp_bio, "testvalue.rs114138760", "testvalue.rs55785911"), 
-                   "testvalue.SNCA_multiplication",
-                  seq.names(Temp_bio, "testvalue.SOD2", "testvalue.APOE GENOTYPE"),
+col_to_remove = c(seq.names(Temp_bio, "testvalue.DHPR", "testvalue.MON1B"), 
+                  seq.names(Temp_bio,"testvalue.RPL13", "testvalue.SRCAP"), 
+                  seq.names(Temp_bio, "testvalue.UBC", "testvalue.APOE GENOTYPE"), 
+                  seq.names(Temp_bio, "testvalue.APP", "testvalue.EFTUD2"),
+                  "testvalue.GAPDH","testvalue.HNF4A", 
+                  seq.names(Temp_bio, "testvalue.PTBP1", "testvalue.rs823118"),
+                  "testvalue.SOD2", "testvalue.WLS", "testvalue.ZNF160",
                   "s", "m")
 
 Temp_bio <- Temp_bio[, !(colnames(Temp_bio) %in% col_to_remove)]
@@ -236,6 +242,9 @@ col_to_remove = c(seq.names(COVANCESC, "lcolldt", "lgroup"), "lvistype",
 COVANCESC <- COVANCESC[, !(colnames(COVANCESC) %in% col_to_remove)]
 COVANCESC= COVANCESC[!(COVANCESC$lsires == ""),]
 
+### sort alphabetically
+
+COVANCESC <- COVANCESC[order(COVANCESC$ltstname), ]
 
 
 ### divide into character and numeric sets
