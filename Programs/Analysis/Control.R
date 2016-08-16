@@ -58,7 +58,7 @@ modelfit <- function(formula, data, dataMethods=c("zv", "nzv"),
   SBF <- list()
   RFE <- list()
 
-  ModelData <- model.data(formula, data, method=dataMethods, prop.na = prop.na)
+  ModelData <- model.data(formula, data, method=dataMethods, prop.na = prop.na, ...)
   
   ## Training
   for(trMethod in trMethods) {
