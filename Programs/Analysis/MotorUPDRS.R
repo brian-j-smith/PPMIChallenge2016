@@ -69,12 +69,12 @@ for(outVar in unlist(outVarsList)) {
 
 ## Shiny trial design tool data
 
-OutcomeVars <- outVarsList
+MotorUPDRSVars <- outVarsList
 
-OutcomeVals <- lapply(Fit, function(outVar) {
+MotorUPDRSVals <- lapply(Fit, function(outVar) {
   fit <- outVar$Train$glmnet
   data.frame(obs = fit$trainingData$.outcome,
              pred = round(predict(fit), 1))
 })
 
-save(OutcomeVars, OutcomeVals, file="shiny/Outcomes.RData")
+save(MotorUPDRSVars, MotorUPDRSVals, file="Programs/Analysis/MotorUPDRS.RData")
