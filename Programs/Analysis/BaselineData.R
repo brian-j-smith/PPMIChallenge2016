@@ -20,5 +20,5 @@ summary(BaselinePD)
 BaselinePDVars <- c(
   paste0("`", seq.names(BaselinePD, "gender", "SNCA"), "`"),
   paste0("as.numeric(`", seq.names(BaselinePD, "rs55785911", "rs114138760"), "`)"), 
-  paste0("`", seq.names(BaselinePD, "znf746", "pd_med_any.V08"), "`")
+  paste0("`", seq.names(BaselinePD, "znf746", "ttau_abeta"), "`")
 )
