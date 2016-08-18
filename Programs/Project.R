@@ -326,3 +326,38 @@ ST2V <- function(event_id, infodt) {
   }
   event_id
 }
+
+
+## Function to extract max summary metric from FitList object and return results in a tidy tabular(matrix)
+SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2){
+    
+    outVars <- names(FitListObj)
+    typeMethods <- names(FitListObj[[outVars[1]]])
+    if (any(typeMethods == "RFE")){
+        idx <- which(typeMethods == "RFE")
+        typeMethods <- typeMethods[-idx]
+    }
+    
+    Result <- list()
+    
+    for(outVar in outVars){
+        
+        for (typeMethod in typeMethods){
+            
+            metrics <- lapply(FitListObj[[outVar]][[typeMethod]], function(x){
+                max(x$results[,metric], na.rm = TRUE)
+            })
+            Result[[outVar]][[typeMethod]] <- unlist(metrics)
+            
+        }
+        
+        Result[[outVar]] <- unlist(Result[[outVar]])
+        
+    }
+    
+    Tbl <- do.call(cbind, Result)
+    Tbl <- apply(Tbl, 2, round, digits)
+    return(Tbl)
+    
+}
+
