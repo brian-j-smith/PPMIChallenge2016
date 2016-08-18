@@ -359,15 +359,20 @@ getWithinSampleError <- function(models) {
         wsRMSE <- (1-wsRsquared) * sd(y)
         
         # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
-        cvRMSE <- min(model$results$RMSE)
-        cvRsquared <- model$results$Rsquared[which.min(model$results$RMSE)]
+        idx <- which.min(model$results$RMSE)
+        cvRMSE <- model$results$RMSE[idx]
+        cvRsquared <- model$results$Rsquared[idx]
+        
+        cvRMSESD <- model$results$RMSESD[idx]
+        cvRsquaredSD <- model$results$RsquaredSD[idx]
         
         # Create modelName
         modelName <- paste(i, j, k, sep = '.')
         
         result <- data.frame(modelName = modelName, 
                              wsRMSE = wsRMSE, wsRsquared = wsRsquared,
-                             cvRMSE = cvRMSE, cvRsquared = cvRsquared)
+                             cvRMSE = cvRMSE, cvRsquared = cvRsquared,
+                             cvRMSESD = cvRMSESD, cvRsquaredSD = cvRsquaredSD)
         results <- rbind(results, result)
       }
     }
