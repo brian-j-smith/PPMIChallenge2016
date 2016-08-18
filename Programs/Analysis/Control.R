@@ -2,14 +2,35 @@
 
 preProcMethod <- c("knnImpute")
 
+cv.number <- 10
+cv.repeats <- 5
+
+trSeeds <- function(seed, M = 100) {
+  if(!missing(seed)) set.seed(seed)
+  B <- cv.number * cv.repeats
+  x <- sample.int(100000, B * M + 1, replace=TRUE)
+  c(split(x[-1], 1:B), x[1])
+}
+
+sbfSeeds <- function(seed) {
+  if(!missing(seed)) set.seed(seed)
+  B <- cv.number * cv.repeats
+  sample.int(100000, B + 1, replace=TRUE)
+}
+
+rfeSeeds <- function(seed, P = 100) {
+  trSeeds(seed, M = P)
+}
+
 
 ## Train control functions
 
-trControlCV <- function(...) {
+trControlCV <- function(seed, ...) {
   trainControl(
     method = "repeatedcv",
-    number = 10,
-    repeats = 5,
+    number = cv.number,
+    repeats = cv.repeats,
+    seeds = trSeeds(seed),
     ...
   )
 }
@@ -23,12 +44,13 @@ caretSBFP <- function(alpha = 0.05) {
   funcs
 }
 
-sbfControlCV <- function(alpha = 0.05, ...) {
+sbfControlCV <- function(alpha = 0.05, seed, ...) {
   sbfControl(
     functions = caretSBFP(alpha),
     method = "repeatedcv",
-    number = 10,
-    repeats = 5,
+    number = cv.number,
+    repeats = cv.repeats,
+    seeds = sbfSeeds(seed),
     ...
   )
 }
@@ -36,12 +58,13 @@ sbfControlCV <- function(alpha = 0.05, ...) {
 
 ## Recursive feature elimination control functions
 
-rfeControlCV <- function(...) {
+rfeControlCV <- function(seed, ...) {
   rfeControl(
     functions = caretFuncs,
     method = "repeatedcv",
-    number = 10,
-    repeats = 5,
+    number = cv.number,
+    repeats = cv.repeats,
+    seeds = rfeSeeds(seed),
     ...
   )
 }
@@ -51,9 +74,10 @@ rfeControlCV <- function(...) {
 
 modelfit <- function(formula, data, dataMethods=c("zv", "nzv"),
                      ImpMethod="knnImpute", trMethods=NULL, sbfMethods=NULL,
-                     rfeMethods=NULL, trControl=trControlCV(),
-                     sbfControl=sbfControlCV(0.20), rfeControl=rfeControlCV(),
-                     tuneGrids=list(), tuneLengths=list(), prop.na = 0.2, ...) {
+                     rfeMethods=NULL, trControl=trControlCV(seed=seed),
+                     sbfControl=sbfControlCV(0.20, seed=seed),
+                     rfeControl=rfeControlCV(seed=seed), tuneGrids=list(),
+                     tuneLengths=list(), prop.na = 0.2, seed, ...) {
   Train <- list()
   SBF <- list()
   RFE <- list()

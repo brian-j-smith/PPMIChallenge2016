@@ -62,7 +62,8 @@ for(outVar in unlist(outVarsList)) {
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
   Fit[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
-                            sbfMethods=sbfMethods, rfeMethods=rfeMethods)
+                            sbfMethods=sbfMethods, rfeMethods=rfeMethods,
+                            seed=123)
 
 }
 
