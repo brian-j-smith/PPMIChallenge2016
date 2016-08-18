@@ -28,6 +28,11 @@ library(doSNOW)
 library(parallel)
 registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
+if(!require(shiny)) install.packages("shiny")
+if(!require(DT)) install.packages("DT")
+if(!require(ggvis)) install.packages("ggvis")
+
+
 library(shiny)
 library(DT)
 library(ggvis)
@@ -326,3 +331,47 @@ ST2V <- function(event_id, infodt) {
   }
   event_id
 }
+
+## Function for within sample error
+## Takes a Fit object and returns a dataframe with the within-sample RMSE and Rsquared for each model
+getWithinSampleError <- function(models) {
+  
+  # initialize data frame for results
+  results <- data.frame()
+  
+  # Iterate through all models in the Fit object
+  for(i in names(models)) {
+    for(j in names(models[[i]])) {
+      for(k in names(models[[i]][[j]])){
+        ## Calculate for each model separately
+        model <- models[[i]][[j]][[k]]
+        
+        # Extract outcome
+        y <- model$trainingData$.outcome
+        
+        # Extract predictions
+        predicted <- predict(model)
+        
+        # Calculate Rsquared
+        wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+        
+        # Calculate RMSE
+        wsRMSE <- (1-wsRsquared) * sd(y)
+        
+        # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
+        cvRMSE <- min(model$results$RMSE)
+        cvRsquared <- model$results$Rsquared[which.min(model$results$RMSE)]
+        
+        # Create modelName
+        modelName <- paste(i, j, k, sep = '.')
+        
+        result <- data.frame(modelName = modelName, 
+                             wsRMSE = wsRMSE, wsRsquared = wsRsquared,
+                             cvRMSE = cvRMSE, cvRsquared = cvRsquared)
+        results <- rbind(results, result)
+      }
+    }
+  }
+  return(results)
+}
+
