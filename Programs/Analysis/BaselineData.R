@@ -9,6 +9,7 @@ BaselinePD <- dropfactors(join.ppmi(
              jlo_totcalc, ess_total, gds_total, dvt_total_recall:dvt_recog_disc_index,
              dvs_lns, quip_total, rem_total, scopa_total, dvs_sftanim, mcatot,
              stai_total, dvt_sdm, upsit_total,
+             syssup:hrstnd, bmi,
              aiputamen:meancaudate,
              `lsires.RBC Morphology`:`testvalue.Serum IGF-1`, 
              `testvalue.Total Cholesterol`:ttau_abeta,

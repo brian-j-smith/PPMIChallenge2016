@@ -69,6 +69,7 @@ Temp[seq.names(Temp, "pdsurg", "pdslunk")] <- lapply(Temp[seq.names(Temp, "pdsur
                                                      factor)
 
 MedHx <- Temp
+MedHx$bmi <- MedHx$wgtkg / (MedHx$htcm / 100)^2
 
 
 ## Baseline assessments
