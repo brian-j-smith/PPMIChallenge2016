@@ -380,3 +380,38 @@ getWithinSampleError <- function(models) {
   return(results)
 }
 
+
+## Function to extract max summary metric from FitList object and return results in a tidy tabular(matrix)
+SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2){
+    
+    outVars <- names(FitListObj)
+    typeMethods <- names(FitListObj[[outVars[1]]])
+    if (any(typeMethods == "RFE")){
+        idx <- which(typeMethods == "RFE")
+        typeMethods <- typeMethods[-idx]
+    }
+    
+    Result <- list()
+    
+    for(outVar in outVars){
+        
+        for (typeMethod in typeMethods){
+            
+            metrics <- lapply(FitListObj[[outVar]][[typeMethod]], function(x){
+                m <- round(mean(x$resample[,metric]), digits)
+                s <- round(sd(x$resample[,metric]), digits)
+                r <- paste0(m, " (", s, ")")
+                return(r)
+            })
+            Result[[outVar]][[typeMethod]] <- unlist(metrics)
+            
+        }
+        
+        Result[[outVar]] <- unlist(Result[[outVar]])
+        
+    }
+    
+    Tbl <- do.call(cbind, Result)
+    return(Tbl)
+    
+}

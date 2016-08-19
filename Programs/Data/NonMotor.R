@@ -48,7 +48,6 @@ Temp <- join_all(
 )
 
 Temp <- ddply(Temp, .(patno), mutate, event_id = ST2V(event_id, infodt))
-Temp$infodt <- NULL
 
 
 ## compute derived variables
@@ -90,15 +89,19 @@ NonMotor <- within(Temp, {
     stai_sub_2 <- rowSums(Temp[stai_rev_vars], na.rm = TRUE)
     stai_total <- stai_sub_1 + stai_sub_2
     upsit_total <- rowSums(Temp[seq.names(Temp, "upsitbk1", "upsitbk4")], na.rm = TRUE)
-    mci_cond_1 <- 1*(cogdecln == 1)
-    mci_cond_2 <- 1*(1*(dvt_total_recall <= 35) + 
-        1*(dvt_recog_disc_index <= 35) + 
-        1*(dvs_jlo_mssae <= 6) +
-        1*(dvs_lns <= 6) +
-        1*(dvt_sftanim <= 35) +
-        1*(dvt_sdm <= 35) >= 2)
-    mci_cond_3 <- 1*(fncdtcog == 0)
-    mild_cog_imp <- factor(1*((mci_cond_1 + mci_cond_2 + mci_cond_3) == 3))
+    # mci_cond_1 <- 1*(cogdecln == 1)
+    # mci_cond_2 <- 1*(
+    #     1*(dvt_total_recall <= 35) + 
+    #         1*(dvt_recog_disc_index <= 35) + 
+    #         1*(dvs_jlo_mssae <= 6) +
+    #         1*(dvs_lns <= 6) +
+    #         1*(dvt_sftanim <= 35) +
+    #         1*(dvt_sdm <= 35) >= 2
+    # )
+    # mci_cond_3 <- 1*(fncdtcog == 0)
+    # mci <- 1*((mci_cond_1 + mci_cond_2 + mci_cond_3) == 3)
+    mci <- 1*(mcatot < 26)
+    dli <- 1*(mcatot < 21)
 })
 
 
@@ -114,6 +117,8 @@ NonMotorBL <- subset(
                dvt_total_recall:dvt_recog_disc_index,
                lns_totraw, dvs_lns,
                mcatot,
+               mci,
+               dli,
                quip_total,
                rem_total, rem_slp_dis,
                scopa_total,
@@ -156,6 +161,7 @@ NonMotorDiff <- ddply(
     upsit_total_diff = upsit_total - baseline(upsit_total, event_id)
 )
 
+
 ## remove two duplicate records
 if(!require(dplyr)){
     install.packages("dplyr")
@@ -165,6 +171,12 @@ if(!require(dplyr)){
 }
 
 NonMotorDiff <- NonMotorDiff %>%
+    arrange(patno, event_id, desc(jlo_totraw)) %>%
+    group_by(patno, event_id) %>%
+    slice(1) %>%
+    as.data.frame()
+
+NonMotor <- NonMotor %>%
     arrange(patno, event_id, desc(jlo_totraw)) %>%
     group_by(patno, event_id) %>%
     slice(1) %>%
@@ -205,6 +217,19 @@ NonMotorV <- reshape(
     direction = "wide"
 )
 
+
+## Add MCI and DLI follow-up indicators
+NonMotorMCIDLI <- reshape(
+    subset(NonMotor, substr(event_id, 1, 1) == "V", select = c(patno, event_id, mci,dli)),
+    idvar = "patno",
+    timevar = "event_id",
+    direction = "wide"
+)
+
+NonMotorV <- join(NonMotorV, NonMotorMCIDLI, by = "patno")
+
+
+## Summary statistics
 str(NonMotor)
 str(NonMotorBL)
 str(NonMotorV)
@@ -214,5 +239,33 @@ summary(NonMotorBL)
 summary(NonMotorV)
 
 
+## Explore longitudinal profiles of NonMotor outcomes
+library(ggplot2)
+
+PDSubjects <- subset(SubjectsBL, recruitment_cat == "PD" & enroll_status == "Enrolled")
+patnos <- sample(unique(PDSubjects$patno), 4)
+
+ggplot(subset(NonMotor, patno %in% patnos), aes(event_id, mcatot, group = patno)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(. ~ patno)
+
+ggplot(subset(NonMotor, patno %in% patnos), aes(event_id, scopa_total, group = patno)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(. ~ patno)
+
+ggplot(subset(NonMotor, patno %in% patnos), aes(event_id, gds_total, group = patno)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(. ~ patno)
+
+ggplot(subset(NonMotor, patno %in% patnos), aes(event_id, upsit_total, group = patno)) +
+    geom_point() +
+    geom_line() +
+    facet_grid(. ~ patno)
+
+
 ## Save datasets
-save(NonMotorBL, NonMotorV, file = "Data/NonMotor.RData")
+save(NonMotorBL, NonMotorV, MCI, file = "Data/NonMotor.RData")
+
