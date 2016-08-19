@@ -1,3 +1,17 @@
+# Add and use libraries
+add <- function(package, character.only=FALSE) {
+  if(!character.only) package <- as.character(substitute(package))
+  if(!require(package, character.only=TRUE)) install.packages(package)
+}
+
+using <- function(package, character.only=FALSE) {
+  if(!character.only) package <- as.character(substitute(package))
+  add(package, character.only=TRUE)
+  library(package, character.only=TRUE)
+}
+
+
+# Area under the curve of x over time
 auc.change <- function(x, time) {
   n <- ncol(x)
   timediff <- diff(time)

@@ -25,23 +25,18 @@ source("Programs/Utils.R")
 
 
 ## Required analysis libraries
-library(plyr)
-library(caret)
+using(plyr)
+using(caret)
 
-library(doSNOW)
-library(parallel)
+using(doSNOW)
+using(parallel)
 registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
-if(!require(shiny)) install.packages("shiny")
-if(!require(DT)) install.packages("DT")
-if(!require(ggvis)) install.packages("ggvis")
-
-
-library(shiny)
-library(DT)
-library(ggvis)
+using(shiny)
+using(DT)
+using(ggvis)
 
 
 ## Install required caret packages
-if(!require(RANN)) install.packages("RANN")
-if(!require(e1071)) install.packages("e1071")
+add(RANN)
+add(e1071)
