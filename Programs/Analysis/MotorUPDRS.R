@@ -85,8 +85,7 @@ MotorUPDRSSummary <- SummaryTable(Fit, digits=3)
 
 MotorUPDRSVars <- outVarsList
 
-MotorUPDRSVals <- lapply(Fit, function(outVar) {
-  fit <- bestfit(outVar)
+MotorUPDRSVals <- lapply(bestmodel(Fit), function(fit) {
   data.frame(obs = fit$trainingData$.outcome,
              pred = round(predict(fit), 1))
 })
