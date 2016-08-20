@@ -383,14 +383,16 @@ SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2){
   
 }
 
+
 ## Returns the best models for variables in a list of fits
-bestmodel <- function(Fit, metric = "Rsquared", max = TRUE) {
-  f <- function(VarFit) {
-    VarFit <- unlist(VarFit, recursive=FALSE)
-    stat <- function(fit) apply(fit$resample[metric], 2, mean, na.rm=TRUE)
-    vals <- sapply(VarFit, stat)
+bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
+                      na.rm = FALSE) {
+  f <- function(Fit) {
+    Fit <- unlist(Fit, recursive=FALSE)
+    stat <- function(fit) apply(fit$resample[metric], 2, mean, na.rm=na.rm)
+    vals <- sapply(Fit, stat)
     idx <- if(max) which.max(vals) else which.min(vals)
-    VarFit[[idx]]
+    Fit[[idx]]
   }
-  lapply(Fit, f)
+  lapply(FitList, f)
 }
