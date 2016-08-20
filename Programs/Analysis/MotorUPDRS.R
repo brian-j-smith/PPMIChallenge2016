@@ -39,22 +39,33 @@ summary(Dataset)
 outVarsList <- list(
   "MDS-UPDRS" = c("1-Year Change" = "nptotal_diff.V04",
                   "2-Year Change" = "nptotal_diff.V06"),
-  "MDS-UPDRS-I" = c("1-Year Change" = "np1total_diff.V04",
+  "MDS-UPDRS I" = c("1-Year Change" = "np1total_diff.V04",
                     "2-Year Change" = "np1total_diff.V06"),
-  "MDS-UPDRS-II" = c("1-Year Change" = "np2total_diff.V04",
+  "MDS-UPDRS II" = c("1-Year Change" = "np2total_diff.V04",
                      "2-Year Change" = "np2total_diff.V06"),
-  "MDS-UPDRS-III" = c("1-Year Change" = "np3total_diff.V04",
+  "MDS-UPDRS III" = c("1-Year Change" = "np3total_diff.V04",
                       "2-Year Change" = "np3total_diff.V06")
 )
 
-# outVars <- c("np1total_auc.V06", "np1total_auc.V08")
-# outVars <- c("nptotal_pca.V04", "nptotal_pca.V06", "nptotal_pca.V08")
-# outVars <- "cut(np1total_diff.V04, c(-Inf, -1.5, 1.5, Inf))"
-# outVars <- "np1total_diff.V04"
+# outVarsList <- list(
+#   "MDS-UPDRS I" = c("2-Year AUC" = "np1total_auc.V06",
+#                     "3-Year AUC" = "np1total_auc.V08")
+# )
+# 
+# outVarsList <- list(
+#   "MDS-UPDRS PCA" = c("1-Year Change" = "nptotal_pca.V04",
+#                       "2-Year Change" = "nptotal_pca.V06",
+#                       "3-Year Change" = "nptotal_pca.V08")
+# )
 
-trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "plsRglm", "rf", "svmLinear")
+trMethods <- c("earth", "gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf",
+               "svmLinear", "svmRadial")
 sbfMethods <- c("glm")
-rfeMethods <- c("glm")
+
+tuneGrids <- list(
+  "glmnet" = expand.grid(alpha=1, lambda=0.1^seq(0, 3, by=0.25)),
+  "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
+)
 
 Fit <- list()
 for(outVar in unlist(outVarsList)) {
@@ -62,10 +73,12 @@ for(outVar in unlist(outVarsList)) {
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
   Fit[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
-                            sbfMethods=sbfMethods, rfeMethods=rfeMethods,
+                            sbfMethods=sbfMethods, tuneGrids=tuneGrids,
                             seed=123)
 
 }
+
+MotorUPDRSSummary <- SummaryTable(Fit, digits=3)
 
 
 ## Shiny trial design tool data
@@ -78,4 +91,5 @@ MotorUPDRSVals <- lapply(Fit, function(outVar) {
              pred = round(predict(fit), 1))
 })
 
-save(MotorUPDRSVars, MotorUPDRSVals, file="Programs/Analysis/MotorUPDRS.RData")
+save(MotorUPDRSSummary, MotorUPDRSVars, MotorUPDRSVals,
+     file="Programs/Analysis/MotorUPDRS.RData")
