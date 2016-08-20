@@ -78,17 +78,20 @@ for(outVar in unlist(outVarsList)) {
 
 }
 
+
+## Summary results
+
 MotorUPDRSSummary <- SummaryTable(Fit, digits=3)
+MotorUPDRSBest <- bestmodel(Fit)
 
 
 ## Shiny trial design tool data
 
 MotorUPDRSVars <- outVarsList
+MotorUPDRSVals <- outValsList(MotorUPDRSBest, digits=1)
 
-MotorUPDRSVals <- lapply(bestmodel(Fit), function(fit) {
-  data.frame(obs = fit$trainingData$.outcome,
-             pred = round(predict(fit), 1))
-})
 
-save(MotorUPDRSSummary, MotorUPDRSVars, MotorUPDRSVals,
+## Save results and data
+
+save(MotorUPDRSSummary, MotorUPDRSBest, MotorUPDRSVars, MotorUPDRSVals,
      file="Programs/Analysis/MotorUPDRS.RData")

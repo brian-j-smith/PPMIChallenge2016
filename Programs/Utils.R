@@ -396,3 +396,12 @@ bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
   }
   lapply(FitList, f)
 }
+
+
+## Return outcomes values for shiny app
+outValsList <- function(BestFitList, digits = getOption("digits")) {
+  lapply(BestFitList, function(fit) {
+    data.frame(obs = fit$trainingData$.outcome,
+               pred = round(as.vector(predict(fit)), digits))
+  })
+}
