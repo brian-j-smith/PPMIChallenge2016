@@ -365,8 +365,8 @@ SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2){
     for (typeMethod in typeMethods){
       
       metrics <- lapply(FitListObj[[outVar]][[typeMethod]], function(x){
-        m <- round(mean(x$resample[,metric]), digits)
-        s <- round(sd(x$resample[,metric]), digits)
+        m <- round(mean(x$resample[,metric], na.rm=TRUE), digits)
+        s <- round(sd(x$resample[,metric], na.rm=TRUE), digits)
         r <- paste0(m, " (", s, ")")
         return(r)
       })
