@@ -41,6 +41,7 @@ library(ggvis)
 ## Install required caret packages
 if(!require(RANN)) install.packages("RANN")
 if(!require(e1071)) install.packages("e1071")
+if(!require(earth)) install.packages("earth")
 
 
 ## Project-specific functions
@@ -62,7 +63,7 @@ auc.change <- function(x, time) {
 
 # Helper function for outcome.rate
 # This function measures "Increase in outcome score per visit"
-getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
+getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F, baseline.id = 'BL') {
   nvisits <- sum(!is.na(x$time) & !is.na(x[outcome])) 
   
   if(nvisits < 2 ) return(NA)
@@ -82,7 +83,7 @@ getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
   }
   
   # Delete NA values
-  x <- x[x$event_id == 'BL' | substr(x$event_id,1,1) == 'V',]
+  x <- x[x$event_id == baseline.id | substr(x$event_id,1,1) == 'V',]
   sp_ind <- NA # Indicates statistical significance
   
   ## Calculate Time to significant progression (if ttsp == T)
@@ -117,10 +118,10 @@ getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
 # outcome is string
 
 outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute', 
-                         patno_only = F, ...){
+                         patno_only = F, baseline.id = 'BL',...){
   
   outcome.df <- data[c('patno', 'event_id', outcome)]
-  outcome.df$time <- ifelse(outcome.df$event_id == 'BL', 0, NA)
+  outcome.df$time <- ifelse(outcome.df$event_id == baseline.id, 0, NA)
   outcome.df$time[outcome.df$event_id == 'V01'] <- 3
   outcome.df$time[outcome.df$event_id == 'V02'] <- 6
   outcome.df$time[outcome.df$event_id == 'V03'] <- 9
@@ -154,7 +155,7 @@ outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute',
   for(i in 1:n){
     x <- outcome.df[outcome.df$patno == patnos[i],]
     x <- x[!is.na(x$time),]
-    y <- (getSlope(x, outcome, scale))
+    y <- (getSlope(x, outcome, scale, baseline.id = baseline.id))
     nvisits[i] <- y[1]
     rates[i] <- y[2]
     p_rates[i] <- y[3]/2
@@ -346,17 +347,24 @@ getWithinSampleError <- function(models) {
         ## Calculate for each model separately
         model <- models[[i]][[j]][[k]]
         
-        # Extract outcome
-        y <- model$trainingData$.outcome
-        
-        # Extract predictions
-        predicted <- predict(model)
-        
-        # Calculate Rsquared
-        wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
-        
-        # Calculate RMSE
-        wsRMSE <- (1-wsRsquared) * sd(y)
+        # Only works for train objects
+        if(j == 'Train') {
+          # Extract outcome
+          y <- model$trainingData$.outcome
+          
+          # SBF and RFE Don't save training Data, return NA and list warning
+          predicted <- predict(model)
+          
+          # Calculate Rsquared
+          wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+          
+          # Calculate RMSE
+          wsRMSE <- (1-wsRsquared) * sd(y)
+        } else {
+          wsRsquared <- wsRMSE <- NA
+          warning('Predict does not work for ', j, ' type models, returning NA')
+        }
+          
         
         # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
         idx <- which.min(model$results$RMSE)
