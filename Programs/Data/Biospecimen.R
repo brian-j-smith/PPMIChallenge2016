@@ -222,7 +222,7 @@ col_to_remove = c(seq.names(Temp_bio, "testvalue.DHPR", "testvalue.MON1B"),
 Temp_bio <- Temp_bio[, !(colnames(Temp_bio) %in% col_to_remove)]
 
 ##############################################
-View(COVANCE)
+## View(COVANCE)
 ##############################################
 
 ### check units in COVANCE
