@@ -88,7 +88,7 @@ NonMotor <- within(Temp, {
                                                 28,29,31,32,35,37,38,40)))], na.rm = TRUE)
     stai_sub_2 <- rowSums(Temp[stai_rev_vars], na.rm = TRUE)
     stai_total <- stai_sub_1 + stai_sub_2
-    upsit_total <- rowSums(Temp[seq.names(Temp, "upsitbk1", "upsitbk4")], na.rm = TRUE)
+    upsit_total <- rowSums(Temp[seq.names(Temp, "upsitbk1", "upsitbk4")])
     # mci_cond_1 <- 1*(cogdecln == 1)
     # mci_cond_2 <- 1*(
     #     1*(dvt_total_recall <= 35) + 
@@ -157,8 +157,8 @@ NonMotorDiff <- ddply(
     dvs_sftanim_diff = dvs_sftanim - baseline(dvs_sftanim, event_id),          
     stai_total_diff = stai_total - baseline(stai_total, event_id),           
     dvsd_sdm_diff = dvsd_sdm - baseline(dvsd_sdm, event_id),             
-    dvt_sdm_diff = dvt_sdm - baseline(dvt_sdm, event_id),              
-    upsit_total_diff = upsit_total - baseline(upsit_total, event_id)
+    dvt_sdm_diff = dvt_sdm - baseline(dvt_sdm, event_id)           
+    # upsit_total_diff = upsit_total - baseline(upsit_total, event_id)
 )
 
 
