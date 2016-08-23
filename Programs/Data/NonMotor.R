@@ -158,7 +158,6 @@ NonMotorDiff <- ddply(
     stai_total_diff = stai_total - baseline(stai_total, event_id),           
     dvsd_sdm_diff = dvsd_sdm - baseline(dvsd_sdm, event_id),             
     dvt_sdm_diff = dvt_sdm - baseline(dvt_sdm, event_id)           
-    # upsit_total_diff = upsit_total - baseline(upsit_total, event_id)
 )
 
 
@@ -209,8 +208,7 @@ NonMotorV <- reshape(
                       dvs_sftanim_diff,          
                       stai_total_diff,           
                       dvsd_sdm_diff,             
-                      dvt_sdm_diff,              
-                      upsit_total_diff)
+                      dvt_sdm_diff)
     ),
     idvar = "patno",
     timevar = "event_id",
