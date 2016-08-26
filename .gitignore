@@ -8,6 +8,7 @@
 !/Programs/**/
 !/Programs/**/*.[rR]
 !/Programs/**/*.[sS][aA][sS]
+!/Programs/Analysis/*.[rR][dD][aA][tT][aA]
 !/References
 !/Results
 !/shiny
