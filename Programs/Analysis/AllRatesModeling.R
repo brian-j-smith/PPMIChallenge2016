@@ -3,11 +3,11 @@
 # Description: Run all rates models
 
 source('Programs/project.R')
-load('Data/Motor.R')
-load('Data/NonMotor.R')
-load('Data/Imaging.R')
 source('Programs/Analysis/BaselineData.R')
 source("Programs/Analysis/Control.R")
+load("Data/Imaging.RData")
+load("Data/Motor.RData")
+load("Data/NonMotor.RData")
 
 # Initialize outcomes of interest
 motor_outcomes <- c('np1total', 'np2total', 'np3total', 'nptotal')

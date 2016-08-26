@@ -265,5 +265,5 @@ ggplot(subset(NonMotor, patno %in% patnos), aes(event_id, upsit_total, group = p
 
 
 ## Save datasets
-save(NonMotorBL, NonMotorV, MCI, file = "Data/NonMotor.RData")
+save(NonMotorBL, NonMotorV, MCI, NonMotor, file = "Data/NonMotor.RData")
 
