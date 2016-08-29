@@ -91,6 +91,10 @@ trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
                "svmRadial")
 sbfMethods <- c("glm")
 
+tuneGrids <- list(
+  "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
+)
+
 Fit <- list()
 
 nIter <- length(outVars)
@@ -102,7 +106,8 @@ for(outVar in unlist(outVars)) {
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
   Fit[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
-                            sbfMethods=sbfMethods, seed = 1232)
+                            sbfMethods=sbfMethods,  tuneGrids=tuneGrids,
+                            seed = 1232)
   i <- i + 1
   tempRatesFits <- Fit
   save(tempRatesFits, file = 'Programs/Analysis/Models/tempRatesFits.RData')

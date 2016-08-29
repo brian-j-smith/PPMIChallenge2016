@@ -40,7 +40,9 @@ if(!require(shiny)) install.packages("shiny")
 if(!require(DT)) install.packages("DT")
 if(!require(ggvis)) install.packages("ggvis")
 if(!require(visreg)) install.packages("visreg")
+if(!require(gam)) install.packages("gam")
 
+library(gam)
 
 library(shiny)
 library(DT)
