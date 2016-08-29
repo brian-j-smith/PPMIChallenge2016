@@ -5,8 +5,6 @@
 source('Programs/project.R')
 source('Programs/Analysis/BaselineData.R')
 
-load('Programs/Analysis/Models/tempRatesFits.RData')
-load('Programs/Analysis/Models/rates.RData')
 load('Programs/Analysis/Models/AllRatesFits.RData')
 load('Programs/Analysis/Models/Rate_outVars.RData')
 load('Programs/Analysis/Models/controlMethods.RData')
@@ -39,7 +37,7 @@ print(dotplot(resamps, metric = 'Rsquared', scales = list(cex = .5)))
 ## Get best fits for each outcome using Brian's function, plot
 bestFits <- list() 
 for(outVar in outVars) {
-  bestFits <- c(bestFits, bestModel(allFits, outVar))
+  bestFits <- c(bestFits, bestmodel(allFits, outVar))
 }
 length(bestFits) # should be equal to dimension of outVar
 names(bestFits) <- outVars
@@ -50,7 +48,7 @@ print(dotplot(resamps, metric = 'Rsquared', scales = list(cex = .9)))
 
 
 ## Final outvars
-final.outvars <- c(outVars[c(1,3,5,7,8,10)], "aiputamen.absolute", "quip_total.absolute",
+final.outvars <- c(..., "aiputamen.absolute", "quip_total.absolute",
                    "gds_total.absolute", 'stai_total.absolute', 'scopa_total.absolute')
 finalFits <- list()
 for(outVar in final.outvars) {

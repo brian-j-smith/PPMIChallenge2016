@@ -73,7 +73,7 @@ Fit <- list()
 
 nIter <- length(outVars)
 i <- 1
-for(outVar in rev(outVars)) {
+for(outVar in (outVars)) {
   
   cat('Modeling ', i, ' out of ', nIter, ' variables (', outVar,')\n', sep = '')
   
