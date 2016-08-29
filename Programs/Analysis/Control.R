@@ -84,37 +84,41 @@ modelfit <- function(formula, data, dataMethods=c("zv", "nzv"),
   
   ## Training
   for(trMethod in trMethods) {
-    tuneLength <- tuneLengths[[trMethod]]
-    if(is.null(tuneLength)) tuneLength <- 3
-    
-    Train[[trMethod]] <- try(train(
+    args <- list(
       ModelData$x, ModelData$y,
       method = trMethod,
       preProcess = ImpMethod,
       trControl = trControl,
       tuneGrid = tuneGrids[[trMethod]],
-      tuneLength = tuneLength
-    ), TRUE)
+      tuneLength = tuneLengths[[trMethod]]
+    )
+    if(is.null(args$tuneLength)) args$tuneLength <- 3
+    if(trMethod == "rf") args$importance <- TRUE
+    Train[[trMethod]] <- try(do.call(train, args), TRUE)
   }
 
   ## Selection by filtering
   for(sbfMethod in sbfMethods) {
-    SBF[[sbfMethod]] <- try(sbf(
+    args <- list(
       ModelData$x, ModelData$y,
       method = sbfMethod,
       preProcess = ImpMethod,
       sbfControl = sbfControl
-    ), TRUE)
+    )
+    if(sbfMethod == "rf") args$importance <- TRUE
+    SBF[[sbfMethod]] <- try(do.call(sbf, args), TRUE)
   }
   
   ## Recursive feature extraction (backward selection)
   for(rfeMethod in rfeMethods) {
-    RFE[[rfeMethod]] <- try(rfe(
+    args <- list(
       ModelData$x, ModelData$y,
       method = rfeMethod,
       preProcess = ImpMethod,
       rfeControl = rfeControl
-    ), TRUE)
+    )
+    if(rfeMethod == "rf") args$importance <- TRUE
+    RFE[[rfeMethod]] <- try(do.call(rfe, args), TRUE)
   }
   
   list(Train=Train, SBF=SBF, RFE=RFE)

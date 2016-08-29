@@ -8,4 +8,4 @@ OutcomeVals <- c(
   MotorUPDRSVals
 )
 
-save(OutcomeVars, OutcomeVals, file="shiny/Outcomes.RData")
+save(VERSION, OutcomeVars, OutcomeVals, file="shiny/Outcomes.RData")

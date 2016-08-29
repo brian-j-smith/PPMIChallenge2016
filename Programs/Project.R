@@ -8,6 +8,10 @@
 remove(list=objects())
 
 
+## Project version
+VERSION <- "1.0.0"
+
+
 ## PPMI source datasets
 load("Data/PPMI.RData")
 load("Data/Biospecimen.RData")
