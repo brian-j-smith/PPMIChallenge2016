@@ -35,6 +35,7 @@ rates <- outcome.rate(outcomes[1], Motor, patno_only = T,
                       exclude_MedUse = F, visit_musts = visit_musts, 
                       time_cuttoff = time_cuttoff)
 
+
 # Calculate outcomes from data
 ## Prints outcome for patients whose relative models don't converge,
 ## For whose slope is assumed to be 0... make sure it makes sense
@@ -62,10 +63,33 @@ save(rates, file = 'Programs/Analysis/Models/rates.RData')
 Dataset <- join(BaselinePD, rates, by = "patno")
 str(Dataset)
 
+outVarsList <- list(
+  "MDS-UPDRS" = c("2-year Slope" = "nptotal.absolute"),
+  "MDS-UPDRS I" = c("2-year Slope" = "np1total.absolute"),
+  "MDS-UPDRS II" = c("2-year Slope" = "np2total.absolute"),
+  "MDS-UPDRS III" = c("2-year Slope" = "np3total.absolute"),
+  
+  "MCA" = c("2-year Slope" = "mcatot.absolute"),
+  "GDS" = c("2-year Slope" = "gds_total.absolute"),
+  "REM" = c("2-year Slope" = "rem_total.absolute"),
+  "STAI" = c("2-year Slope" = "stai_total.absolute"),
+  "JLO" = c("2-year Slope" = "jlo_totcalc.absolute"),
+  "SCOPA" = c("2-year Slope" = "scopa_total.absolute"),
+  "QUIP" = c("2-year Slope" = "quip_total.absolute"),
+  "ESS" = c("2-year Slope" = "ess_total.absolute"),
+  "DVT-TR" = c("2-year Slope" = "dvt_total_recall.absolute"),
+  
+  "AIPUTAMEN" = c("2-year Slope" = "aiputamen.absolute"),
+  "CDR" = c("2-year Slope" = "countdensityratio.absolute"),
+  "Mean Striatum" = c("2-year Relative Slope" = "meanstriatum.relative"),
+  "Mean Putamen" = c("2-year Relative Slope" = "meanputamen.relative")
+)
+
+
 ## Run models
-trMethods <- c("gbm", "glmnet", 'glmStepAIC',"pls", "rf", "svmLinear", 'svmRadial')
-sbfMethods <- 'glm'
-rfeMethods <- NULL
+trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
+               "svmRadial")
+sbfMethods <- c("glm")
 
 save(trMethods, sbfMethods, rfeMethods, file = 'Programs/Analysis/Models/controlMethods.RData')
 
@@ -73,15 +97,14 @@ Fit <- list()
 
 nIter <- length(outVars)
 i <- 1
-for(outVar in (outVars)) {
+for(outVar in unlist(outVars)) {
   
   cat('Modeling ', i, ' out of ', nIter, ' variables (', outVar,')\n', sep = '')
   
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
   Fit[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
-                            sbfMethods=sbfMethods, rfeMethods=rfeMethods,
-                            seed = 1232)
+                            sbfMethods=sbfMethods, seed = 1232)
   i <- i + 1
   tempRatesFits <- Fit
   save(tempRatesFits, file = 'Programs/Analysis/Models/tempRatesFits.RData')
@@ -91,3 +114,21 @@ for(outVar in (outVars)) {
 Fit
 AllRatesFits <- Fit
 save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
+
+## Summary results
+
+RatesFitsSummary <- SummaryTable(AllRatesFits, digits=3)
+RatesFitsBest <- bestmodel(AllRatesFits)
+
+
+## Shiny trial design tool data
+
+RatesFitsVars <- outVarsList
+RatesFitsVals <- outValsList(MotorUPDRSBest, digits=1)
+
+
+## Save results and data
+
+save(RatesFitsSummary, RatesFitsBest, RatesFitsVars, RatesFitsVals,
+     file="Programs/Analysis/RatesFits.RData")
+
