@@ -57,7 +57,7 @@ for(outcome in outcomes) {
 summary(rates)
 
 # Save rates dataset
-save(rates, file = 'Programs/Analysis/Models/rates.RData')
+save(rates, file = 'Programs/Analysis/rates.RData')
 
 ## Initialize Dataset for Modeling
 Dataset <- join(BaselinePD, rates, by = "patno")
@@ -69,17 +69,17 @@ outVarsList <- list(
   "MDS-UPDRS II" = c("2-year Slope" = "np2total.absolute"),
   "MDS-UPDRS III" = c("2-year Slope" = "np3total.absolute"),
   
-  "MCA" = c("2-year Slope" = "mcatot.absolute"),
-  "GDS" = c("2-year Slope" = "gds_total.absolute"),
-  "REM" = c("2-year Slope" = "rem_total.absolute"),
-  "STAI" = c("2-year Slope" = "stai_total.absolute"),
-  "JLO" = c("2-year Slope" = "jlo_totcalc.absolute"),
-  "SCOPA" = c("2-year Slope" = "scopa_total.absolute"),
-  "QUIP" = c("2-year Slope" = "quip_total.absolute"),
-  "ESS" = c("2-year Slope" = "ess_total.absolute"),
-  "DVT-TR" = c("2-year Slope" = "dvt_total_recall.absolute"),
+  "MCA Total" = c("2-year Slope" = "mcatot.absolute"),
+  "GDS Total" = c("2-year Slope" = "gds_total.absolute"),
+  "REM Total" = c("2-year Slope" = "rem_total.absolute"),
+  "STAI Total" = c("2-year Slope" = "stai_total.absolute"),
+  "JLO Total" = c("2-year Slope" = "jlo_totcalc.absolute"),
+  "SCOPA Total" = c("2-year Slope" = "scopa_total.absolute"),
+  "QUIP Total" = c("2-year Slope" = "quip_total.absolute"),
+  "ESS Total" = c("2-year Slope" = "ess_total.absolute"),
+  "Total Recall" = c("2-year Slope" = "dvt_total_recall.absolute"),
   
-  "AIPUTAMEN" = c("2-year Slope" = "aiputamen.absolute"),
+  "AI Putamen" = c("2-year Slope" = "aiputamen.absolute"),
   "CDR" = c("2-year Slope" = "countdensityratio.absolute"),
   "Mean Striatum" = c("2-year Relative Slope" = "meanstriatum.relative"),
   "Mean Putamen" = c("2-year Relative Slope" = "meanputamen.relative")
@@ -90,8 +90,6 @@ outVarsList <- list(
 trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
                "svmRadial")
 sbfMethods <- c("glm")
-
-save(trMethods, sbfMethods, rfeMethods, file = 'Programs/Analysis/Models/controlMethods.RData')
 
 Fit <- list()
 
@@ -113,7 +111,7 @@ for(outVar in unlist(outVars)) {
 
 Fit
 AllRatesFits <- Fit
-save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
+# save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
 
 ## Summary results
 
