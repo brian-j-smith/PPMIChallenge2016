@@ -24,8 +24,8 @@ outVarsList <- list(
                       "2-Year Change" = "np3total_diff.V06")
 )
 
-trMethods <- c("earth", "gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf",
-               "svmLinear", "svmRadial")
+trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
+               "svmRadial")
 sbfMethods <- c("glm")
 
 tuneGrids <- list(
