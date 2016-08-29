@@ -26,19 +26,13 @@ scales <- ifelse(outcomes %in% getRelative, 'relative', 'absolute')
 outVars <- paste(outcomes, scales, sep = '.')
 save(outVars, file = 'Programs/Analysis/Models/Rate_outVars.RData')
 
-
 time_cuttoff <- 24 # Don't include observations past this length of time
 visit_musts <- 'V06' # Patients must have had this visit
-
-## Initialize rates (extract patno only)
-rates <- outcome.rate(outcomes[1], Motor, patno_only = T, 
-                      exclude_MedUse = F, visit_musts = visit_musts, 
-                      time_cuttoff = time_cuttoff)
-
 
 # Calculate outcomes from data
 ## Prints outcome for patients whose relative models don't converge,
 ## For whose slope is assumed to be 0... make sure it makes sense
+Dataset <- BaselinePD
 i <- 0
 for(outcome in outcomes) {
   i <- i + 1
@@ -47,21 +41,14 @@ for(outcome in outcomes) {
   if(outcome %in% imaging_outcomes) data <- Imaging
     
   rate.i  <- outcome.rate(outcome, data, scale = scales[i], 
-                          exclude_MedUse = T, visit_musts = visit_musts, 
+                          exclude_MedUse = F, visit_musts = visit_musts, 
                           time_cuttoff = time_cuttoff)[,c(1:2)]
   names(rate.i) <- c('patno', paste(outcome, scales[i], sep = '.'))
-  rates <- join(rates, rate.i, by = 'patno')
+  Dataset <- join(Dataset, rate.i, by = 'patno')
 }
 
-(h <- head(rates))
-summary(rates)
-
-# Save rates dataset
-save(rates, file = 'Programs/Analysis/rates.RData')
-
-## Initialize Dataset for Modeling
-Dataset <- join(BaselinePD, rates, by = "patno")
 str(Dataset)
+apply(Dataset, 2, function(x) sum(!is.na(x)))
 
 outVarsList <- list(
   "MDS-UPDRS" = c("2-year Slope" = "nptotal.absolute"),
@@ -116,19 +103,24 @@ for(outVar in unlist(outVars)) {
 
 Fit
 AllRatesFits <- Fit
-# save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
+save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
 
 ## Summary results
 
 RatesFitsSummary <- SummaryTable(AllRatesFits, digits=3)
 RatesFitsBest <- bestmodel(AllRatesFits)
 
-
 ## Shiny trial design tool data
 
 RatesFitsVars <- outVarsList
-RatesFitsVals <- outValsList(MotorUPDRSBest, digits=1)
+RatesFitsVals <- outValsList(RatesFitsBest)
 
+rate_multiplier <- 24 # Set to 1 for monthly, 12 for yearly, etc
+RatesFitsVals <- lapply(RatesFitsVals, function(x) x * rate_multiplier)
+
+exp.idx <- grep('relative', names(RatesFitsVals))
+
+RatesFitsVals[exp.idx] <- lapply(RatesFitsVals[exp.idx], function(x) exp(x)-1)
 
 ## Save results and data
 

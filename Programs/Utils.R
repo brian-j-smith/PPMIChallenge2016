@@ -100,7 +100,7 @@ getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F,
 # outcome is string
 # time cuttoff is treating outcomes after that time as NA
 outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute', 
-                         patno_only = F, baseline.id = c('BL', 'SC'), plot.random = F, 
+                         patno_only = F, baseline.id = c('BL', 'SC'), 
                          allow_int = T, exclude_MedUse = F, visit_musts = NULL, 
                          time_cuttoff = 60, ...){
   
@@ -152,15 +152,8 @@ outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute',
   
   # Initialize vectors to contain patient level data
   rates <- numeric(n)
-  p_rates <- numeric(n)
   nvisits <- numeric(n)
-  ttsp <- numeric(n) # Time to significant progression
-  sp_ind <- numeric(n) # Time to significant progression indicator
   time_on_study <- numeric(n)
-  plot.idx <- 0
-  if(plot.random) plot.idx <- sample(1:n, plot.random)
-  
-  
   # Iterate through all patients, calculate slope
   for(i in 1:n){
     x <- outcome.df[outcome.df$patno == patnos[i],]
@@ -169,28 +162,13 @@ outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute',
     y <- (getSlope(x, outcome, scale, baseline.id = baseline.id, allow_int = allow_int))
     nvisits[i] <- y[1]
     rates[i] <- y[2]
-    p_rates[i] <- y[3]/2
-    ttsp[i] <- y[4]
-    sp_ind[i] <- y[5]
     time_on_study[i] <- ifelse(!all(is.na(x$time)), max(x$time, na.rm = T), NA)
-    if(plot.random & (i %in% plot.idx)) {
-      if(dim(x)[1] <= 1) {
-        plot.idx[which(plot.idx == i)] <- plot.idx[which(plot.idx == i)] + 1
-        cat('Plot index recalculated \n')
-      } else {
-        plot(x$time, x[[outcome]], ylab = outcome, xlab = 'time', pch = 20)
-        legend('topleft', legend = c(paste('patno =', patnos[i]), paste('rate =', rates[i])), bty = 'n')
-      }
-    }
   }
   
-  # Calculate truncated rate
-  rates0 <- rates * (p_rates < sig.level)
-  rates0[rates == 0] <- 0
-  
   # Return data frame
-  myOutcome <- data.frame(patno = patnos, rates = rates, rates0 = rates0, p_rates = p_rates, 
-                          ttsp = ttsp, sp_ind = sp_ind, time_on_study = time_on_study, nvisits = nvisits)
+  myOutcome <- data.frame(patno = patnos, rates = rates, 
+                          time_on_study = time_on_study, 
+                          nvisits = nvisits)
 }
 
 # Get Changepoint Survival outcome
@@ -455,7 +433,7 @@ SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2,
     for (typeMethod in typeMethods){
       
       metrics <- lapply(FitListObj[[outVar]][[typeMethod]], function(x){
-        if(is.null(x$resample)) return(NA)
+        if(attr(x, 'class') == 'try-error') return(NA)
         m <- round(mean(x$resample[,metric], na.rm=na.rm), digits)
         s <- round(sd(x$resample[,metric], na.rm=na.rm), digits)
         r <- paste0(m, " (", s, ")")
@@ -479,8 +457,11 @@ SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2,
 bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
                       na.rm = FALSE) {
   f <- function(Fit) {
-    Fit <- unlist(Fit, recursive=FALSE)
-    stat <- function(fit) apply(fit$resample[metric], 2, mean, na.rm=na.rm)
+    Fit <- Fit$Train
+    stat <- function(fit) {
+      if(attr(fit, 'class') == 'try-error') return(NA)
+      apply(fit$resample[metric], 2, mean, na.rm=na.rm)
+    }
     vals <- sapply(Fit, stat)
     idx <- if(max) which.max(vals) else which.min(vals)
     Fit[[idx]]
@@ -488,11 +469,22 @@ bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
   lapply(FitList, f)
 }
 
-
 ## Return outcomes values for shiny app
 outValsList <- function(BestFitList, digits = getOption("digits")) {
   lapply(BestFitList, function(fit) {
     data.frame(obs = fit$trainingData$.outcome,
                pred = round(as.vector(predict(fit)), digits))
   })
+}
+
+appendList <- function (x, val) 
+{
+  stopifnot(is.list(x), is.list(val))
+  xnames <- names(x)
+  for (v in names(val)) {
+    x[[v]] <- if (v %in% xnames && is.list(x[[v]]) && is.list(val[[v]])) 
+      appendList(x[[v]], val[[v]])
+    else c(x[[v]], val[[v]])
+  }
+  x
 }
