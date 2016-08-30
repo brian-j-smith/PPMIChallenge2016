@@ -334,62 +334,84 @@ ST2V <- function(event_id, infodt) {
 
 ## Function for within sample error
 ## Takes a Fit object and returns a dataframe with the within-sample RMSE and Rsquared for each model
-getWithinSampleError <- function(models) {
+getWithinSampleError <- function(models, FitObject = T, bestmodelValsObject = !(FitObject)) {
   
   # initialize data frame for results
   results <- data.frame()
   
-  # Iterate through all models in the Fit object
-  for(i in names(models)) {
-    for(j in names(models[[i]])) {
-      for(k in names(models[[i]][[j]])){
-        ## Calculate for each model separately
-        model <- models[[i]][[j]][[k]]
-        
-        # Only works for train objects
-        if(j == 'Train' & attr(model, 'class') != 'try-error') {
-          # Extract outcome
-          y <- model$trainingData$.outcome
+  if(bestmodelValsObject) {
+    for(i in names(models)){
+      predicted <- models[[i]]$pred
+      y <- models[[i]]$obs
+      
+      # Calculate Rsquared
+      wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+      
+      # Calculate RMSE
+      wsRMSE <- (1-wsRsquared) * sd(y)
+      
+      # Store results
+      result <- data.frame(modelName = i, wsRMSE = wsRMSE, wsRsquared = wsRsquared)
+      results <- rbind(results, result)
+    }
+    return(results)
+  }
+  
+  if(FitObject) {
+    
+    
+    # Iterate through all models in the Fit object
+    for(i in names(models)) {
+      for(j in names(models[[i]])) {
+        for(k in names(models[[i]][[j]])){
+          ## Calculate for each model separately
+          model <- models[[i]][[j]][[k]]
           
-          # SBF and RFE Don't save training Data, return NA and list warning
-          predicted <- predict(model)
+          # Only works for train objects
+          if(j == 'Train') {
+            # Extract outcome
+            y <- model$trainingData$.outcome
+            
+            # SBF and RFE Don't save training Data, return NA and list warning
+            predicted <- predict(model)
+            
+            # Calculate Rsquared
+            wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+            
+            # Calculate RMSE
+            wsRMSE <- (1-wsRsquared) * sd(y)
+          } else {
+            wsRsquared <- wsRMSE <- NA
+            warning('NA vals produced as result of SBF/RFE or try errors')
+          }
           
-          # Calculate Rsquared
-          wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+          if(attr(model, 'class') != 'try-error') {
+            # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
+            idx <- which.min(model$results$RMSE)
+            cvRMSE <- model$results$RMSE[idx]
+            cvRsquared <- model$results$Rsquared[idx]
+            
+            cvRMSESD <- model$results$RMSESD[idx]
+            cvRsquaredSD <- model$results$RsquaredSD[idx]
+            
+          } else {
+            cvRMSE <- cvRsquared <- cvRMSESD <- cvRsquaredSD <- NA
+            warning('NA vals produced as result of SBF/RFE or try errors')
+          }
           
-          # Calculate RMSE
-          wsRMSE <- (1-wsRsquared) * sd(y)
-        } else {
-          wsRsquared <- wsRMSE <- NA
-          warning('NA vals produced as result of SBF/RFE or try errors')
+          # Create modelName
+          modelName <- paste(i, j, k, sep = '.')
+          
+          result <- data.frame(modelName = modelName, 
+                               wsRMSE = wsRMSE, wsRsquared = wsRsquared,
+                               cvRMSE = cvRMSE, cvRMSESD = cvRMSESD,
+                               cvRsquared = cvRsquared, cvRsquaredSD = cvRsquaredSD)
+          results <- rbind(results, result)
         }
-        
-        if(attr(model, 'class') != 'try-error') {
-          # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
-          idx <- which.min(model$results$RMSE)
-          cvRMSE <- model$results$RMSE[idx]
-          cvRsquared <- model$results$Rsquared[idx]
-          
-          cvRMSESD <- model$results$RMSESD[idx]
-          cvRsquaredSD <- model$results$RsquaredSD[idx]
-          
-        } else {
-          cvRMSE <- cvRsquared <- cvRMSESD <- cvRsquaredSD <- NA
-          warning('NA vals produced as result of SBF/RFE or try errors')
-        }
-        
-        # Create modelName
-        modelName <- paste(i, j, k, sep = '.')
-        
-        result <- data.frame(modelName = modelName, 
-                             wsRMSE = wsRMSE, wsRsquared = wsRsquared,
-                             cvRMSE = cvRMSE, cvRMSESD = cvRMSESD,
-                             cvRsquared = cvRsquared, cvRsquaredSD = cvRsquaredSD)
-        results <- rbind(results, result)
       }
     }
+    return(results)
   }
-  return(results)
 }
 
 getOutcomeMeasurements <- function(outcome, data) {
