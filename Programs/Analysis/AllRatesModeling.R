@@ -36,12 +36,17 @@ Dataset <- BaselinePD
 i <- 0
 for(outcome in outcomes) {
   i <- i + 1
-  if(outcome %in% motor_outcomes) data <- Motor
+  baseline.id <- c('SC', 'BL')
+  if(outcome %in% motor_outcomes) {
+    data <- Motor
+    baseline.id <- 'BL'
+  }
   if(outcome %in% non_motor_outcomes) data <- NonMotor
   if(outcome %in% imaging_outcomes) data <- Imaging
     
   rate.i  <- outcome.rate(outcome, data, scale = scales[i], 
                           exclude_MedUse = F, visit_musts = visit_musts, 
+                          baseline.id = baseline.id,
                           time_cuttoff = time_cuttoff)[,c(1:2)]
   names(rate.i) <- c('patno', paste(outcome, scales[i], sep = '.'))
   Dataset <- join(Dataset, rate.i, by = 'patno')
