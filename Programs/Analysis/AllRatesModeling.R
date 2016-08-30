@@ -68,8 +68,8 @@ outVarsList <- list(
   
   "AI Putamen" = c("2-year Slope" = "aiputamen.absolute"),
   "CDR" = c("2-year Slope" = "countdensityratio.absolute"),
-  "Mean Striatum" = c("2-year Relative Slope" = "meanstriatum.relative"),
-  "Mean Putamen" = c("2-year Relative Slope" = "meanputamen.relative")
+  "Mean Striatum" = c("2-year Relative Slope (% change)" = "meanstriatum.relative"),
+  "Mean Putamen" = c("2-year Relative Slope (% change)" = "meanputamen.relative")
 )
 
 
@@ -121,7 +121,7 @@ RatesFitsVals <- lapply(RatesFitsVals, function(x) x * rate_multiplier)
 exp.idx <- grep('relative', names(RatesFitsVals))
 
 RatesFitsVals[exp.idx] <- lapply(RatesFitsVals[exp.idx], function(x) exp(x)-1)
-
+RatesFitsVals <- lapply(RatesFitsVals, round, digits = 3)
 ## Save results and data
 
 save(RatesFitsSummary, RatesFitsBest, RatesFitsVars, RatesFitsVals,

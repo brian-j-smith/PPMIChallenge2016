@@ -138,7 +138,7 @@ outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute',
       for(visit in visit_musts) {
         x <- outcome.df[outcome.df$patno == patnos[i],]
         x <- x[!is.na(x$time),]
-        if(!any(x$event_id == visit)) exclude_noVisit <- c(exclude_noVisit, x$patno[1])
+        if(!any(x$event_id[!is.na(x[[outcome]])] == visit)) exclude_noVisit <- c(exclude_noVisit, x$patno[1])
       }
     }
     outcome.df <- outcome.df[!(outcome.df$patno %in% exclude_noVisit),]
