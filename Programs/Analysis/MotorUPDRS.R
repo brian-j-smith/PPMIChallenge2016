@@ -26,7 +26,6 @@ outVarsList <- list(
 
 trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
                "svmRadial")
-sbfMethods <- c("glm")
 
 tuneGrids <- list(
   "glmnet" = expand.grid(alpha=1, lambda=0.1^seq(0, 3, by=0.25)),
@@ -39,8 +38,7 @@ for(outVar in unlist(outVarsList)) {
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
   FitList[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
-                                sbfMethods=sbfMethods, tuneGrids=tuneGrids,
-                                seed=123)
+                                tuneGrids=tuneGrids, seed=123)
 
 }
 
