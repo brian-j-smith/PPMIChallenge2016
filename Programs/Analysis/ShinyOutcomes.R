@@ -3,12 +3,14 @@ load("Programs/Analysis/Imaging.RData")
 
 OutcomeVars <- c(
   MotorUPDRSVars,
-  ImagingVars
+  ImagingVars,
+  NonMotorVars
 )
 
 OutcomeVals <- c(
   MotorUPDRSVals, 
-  ImagingVals
+  ImagingVals,
+  NonMotorVals
 )
 
 save(VERSION, OutcomeVars, OutcomeVals, file="shiny/Outcomes.RData")
