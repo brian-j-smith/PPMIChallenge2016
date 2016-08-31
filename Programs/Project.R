@@ -39,7 +39,7 @@ registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 using(shiny)
 using(DT)
 using(ggvis)
-
+using(gam)
 
 ## Install required caret packages
 add(RANN)

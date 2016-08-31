@@ -62,4 +62,4 @@ summary(MotorV)
 
 
 ## Save datasets
-save(MotorBL, MotorV, file="Data/Motor.RData")
+save(MotorBL, MotorV, Motor, file="Data/Motor.RData")

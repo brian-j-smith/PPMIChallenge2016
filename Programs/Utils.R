@@ -29,17 +29,33 @@ auc.change <- function(x, time) {
 
 # Helper function for outcome.rate
 # This function measures "Increase in outcome score per visit"
-getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
+getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F, 
+                     baseline.id = 'BL', allow_int = T) {
   nvisits <- sum(!is.na(x$time) & !is.na(x[outcome])) 
   
-  if(nvisits < 2 ) return(NA)
-  
+  if(nvisits < 2) return(NA)
+  if(min(x$time) > 0) return(NA)
+  if(all(is.na(x[[outcome]][x$time ==0]))) return(NA)
   link <- ifelse(scale == 'absolute', 'identity', 'log')
   
   # Some fits don't converge when the scale is relative
-  fit <- suppressWarnings(
-    glm(x[[outcome]] ~ x$time, family = gaussian(link = link), 
-        start = c(1,0), control = list(maxit = 1000)))
+  if(allow_int) {
+    fit <- suppressWarnings(
+      glm(x[[outcome]] ~ x$time, family = gaussian(link = link), 
+          start = c(1,0), control = list(maxit = 1000)))
+  } else {
+    y <- x[[outcome]]
+    if(scale == 'absolute') {
+      y <- x[[outcome]] - mean(x[[outcome]][x$time == 0], na.rm = T) # Avg of screening and baseline visit
+      fit <- suppressWarnings(
+        glm(y ~ x$time - 1, family = gaussian(link = link), 
+            start = c(0), control = list(maxit = 1000)))
+    } else {
+      warning(paste0('relative models do not make sense without intercept, returning NA'))
+      return(c(nvisits, NA, NA, NA, NA, NA))
+    }
+    
+  }
   
   if(!fit$converged) {
     warning(paste0('Fit not converged for patient ', x$patno[1], 
@@ -49,7 +65,7 @@ getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
   }
   
   # Delete NA values
-  x <- x[x$event_id == 'BL' | substr(x$event_id,1,1) == 'V',]
+  x <- x[(x$event_id %in% baseline.id) | substr(x$event_id,1,1) == 'V',]
   sp_ind <- NA # Indicates statistical significance
   
   ## Calculate Time to significant progression (if ttsp == T)
@@ -78,16 +94,18 @@ getSlope <- function(x, outcome, scale, sig.level = 0.05, ttsp = F) {
     }
   }
   s <- suppressWarnings(summary(fit)$coef)
-  return(c(nvisits, unname(s[2,c(1,4)]), ttsp, sp_ind))
+  return(c(nvisits, unname(s[rownames(s) == 'x$time'][c(1,4)]), ttsp, sp_ind))
 }
 
 # outcome is string
-
+# time cuttoff is treating outcomes after that time as NA
 outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute', 
-                         patno_only = F, ...){
+                         patno_only = F, baseline.id = c('BL', 'SC'), 
+                         allow_int = T, exclude_MedUse = F, visit_musts = NULL, 
+                         time_cuttoff = 60, ...){
   
   outcome.df <- data[c('patno', 'event_id', outcome)]
-  outcome.df$time <- ifelse(outcome.df$event_id == 'BL', 0, NA)
+  outcome.df$time <- ifelse(outcome.df$event_id %in% baseline.id, 0, NA)
   outcome.df$time[outcome.df$event_id == 'V01'] <- 3
   outcome.df$time[outcome.df$event_id == 'V02'] <- 6
   outcome.df$time[outcome.df$event_id == 'V03'] <- 9
@@ -101,9 +119,32 @@ outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute',
   outcome.df$time[outcome.df$event_id == 'V11'] <- 54
   outcome.df$time[outcome.df$event_id == 'V12'] <- 60
   
-  # NAs occur when a visit is not baseline or visit V
-  patnos <- unique(outcome.df$patno)
+  # time cuttoff
+  outcome.df$time[outcome.df$time > time_cuttoff] <- NA
   
+  # Take out exclusions
+  if(exclude_MedUse) {
+    MedUseIDX <- unique(PDMedUse[(PDMedUse$event_id %in% c(baseline.id, paste0('V0', 1:4))) & PDMedUse$pd_med_any != 0,]$patno)
+    included <- outcome.df[!(outcome.df$patno %in% MedUseIDX),]
+    outcome.df <- included
+    head(outcome.df)
+  }
+  
+  
+  if(!is.null(visit_musts)) {
+    patnos <- unique(outcome.df$patno)
+    exclude_noVisit <- c()
+    for(i in 1:length(patnos)) {
+      for(visit in visit_musts) {
+        x <- outcome.df[outcome.df$patno == patnos[i],]
+        x <- x[!is.na(x$time),]
+        if(!any(x$event_id[!is.na(x[[outcome]])] == visit)) exclude_noVisit <- c(exclude_noVisit, x$patno[1])
+      }
+    }
+    outcome.df <- outcome.df[!(outcome.df$patno %in% exclude_noVisit),]
+  }
+  
+  patnos <- unique(outcome.df$patno)
   # Sometimes only need patnos
   if(patno_only) return(data.frame(patno = patnos))
   
@@ -111,32 +152,23 @@ outcome.rate <- function(outcome, data, sig.level = 0.05, scale = 'absolute',
   
   # Initialize vectors to contain patient level data
   rates <- numeric(n)
-  p_rates <- numeric(n)
   nvisits <- numeric(n)
-  ttsp <- numeric(n) # Time to significant progression
-  sp_ind <- numeric(n) # Time to significant progression indicator
   time_on_study <- numeric(n)
-  
   # Iterate through all patients, calculate slope
   for(i in 1:n){
     x <- outcome.df[outcome.df$patno == patnos[i],]
     x <- x[!is.na(x$time),]
-    y <- (getSlope(x, outcome, scale))
+    
+    y <- (getSlope(x, outcome, scale, baseline.id = baseline.id, allow_int = allow_int))
     nvisits[i] <- y[1]
     rates[i] <- y[2]
-    p_rates[i] <- y[3]/2
-    ttsp[i] <- y[4]
-    sp_ind[i] <- y[5]
     time_on_study[i] <- ifelse(!all(is.na(x$time)), max(x$time, na.rm = T), NA)
   }
   
-  # Calculate truncated rate
-  rates0 <- rates * (p_rates < sig.level)
-  rates0[rates == 0] <- 0
-  
   # Return data frame
-  myOutcome <- data.frame(patno = patnos, rates = rates, rates0 = rates0, p_rates = p_rates, 
-                          ttsp = ttsp, sp_ind = sp_ind, time_on_study = time_on_study)
+  myOutcome <- data.frame(patno = patnos, rates = rates, 
+                          time_on_study = time_on_study, 
+                          nvisits = nvisits)
 }
 
 # Get Changepoint Survival outcome
@@ -216,6 +248,7 @@ outcome.changepoint <- function(outcome, data, sig.level = .05, clin.sig.level =
   }
   myOutcome <- data.frame(patno = patnos, ttcsp = ttcsp, csp_ind = csp_ind)
 }
+
 
 
 
@@ -301,50 +334,106 @@ ST2V <- function(event_id, infodt) {
 
 ## Function for within sample error
 ## Takes a Fit object and returns a dataframe with the within-sample RMSE and Rsquared for each model
-getWithinSampleError <- function(models) {
+getWithinSampleError <- function(models, FitObject = T, bestmodelValsObject = !(FitObject)) {
   
   # initialize data frame for results
   results <- data.frame()
   
-  # Iterate through all models in the Fit object
-  for(i in names(models)) {
-    for(j in names(models[[i]])) {
-      for(k in names(models[[i]][[j]])){
-        ## Calculate for each model separately
-        model <- models[[i]][[j]][[k]]
-        
-        # Extract outcome
-        y <- model$trainingData$.outcome
-        
-        # Extract predictions
-        predicted <- predict(model)
-        
-        # Calculate Rsquared
-        wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
-        
-        # Calculate RMSE
-        wsRMSE <- (1-wsRsquared) * sd(y)
-        
-        # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
-        idx <- which.min(model$results$RMSE)
-        cvRMSE <- model$results$RMSE[idx]
-        cvRsquared <- model$results$Rsquared[idx]
-        
-        cvRMSESD <- model$results$RMSESD[idx]
-        cvRsquaredSD <- model$results$RsquaredSD[idx]
-        
-        # Create modelName
-        modelName <- paste(i, j, k, sep = '.')
-        
-        result <- data.frame(modelName = modelName, 
-                             wsRMSE = wsRMSE, wsRsquared = wsRsquared,
-                             cvRMSE = cvRMSE, cvRsquared = cvRsquared,
-                             cvRMSESD = cvRMSESD, cvRsquaredSD = cvRsquaredSD)
-        results <- rbind(results, result)
+  if(bestmodelValsObject) {
+    for(i in names(models)){
+      predicted <- models[[i]]$pred
+      y <- models[[i]]$obs
+      
+      # Calculate Rsquared
+      wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+      
+      # Calculate RMSE
+      wsRMSE <- (1-wsRsquared) * sd(y)
+      
+      # Store results
+      result <- data.frame(modelName = i, wsRMSE = wsRMSE, wsRsquared = wsRsquared)
+      results <- rbind(results, result)
+    }
+    return(results)
+  }
+  
+  if(FitObject) {
+    
+    
+    # Iterate through all models in the Fit object
+    for(i in names(models)) {
+      for(j in names(models[[i]])) {
+        for(k in names(models[[i]][[j]])){
+          ## Calculate for each model separately
+          model <- models[[i]][[j]][[k]]
+          
+          # Only works for train objects
+          if(j == 'Train') {
+            # Extract outcome
+            y <- model$trainingData$.outcome
+            
+            # SBF and RFE Don't save training Data, return NA and list warning
+            predicted <- predict(model)
+            
+            # Calculate Rsquared
+            wsRsquared <- 1 - sum((y-predicted)^2)/sum((y-mean(y))^2)
+            
+            # Calculate RMSE
+            wsRMSE <- (1-wsRsquared) * sd(y)
+          } else {
+            wsRsquared <- wsRMSE <- NA
+            warning('NA vals produced as result of SBF/RFE or try errors')
+          }
+          
+          if(attr(model, 'class') != 'try-error') {
+            # Extract cvRMSE and cvRsquared (picks final model on lowest RMSE)
+            idx <- which.min(model$results$RMSE)
+            cvRMSE <- model$results$RMSE[idx]
+            cvRsquared <- model$results$Rsquared[idx]
+            
+            cvRMSESD <- model$results$RMSESD[idx]
+            cvRsquaredSD <- model$results$RsquaredSD[idx]
+            
+          } else {
+            cvRMSE <- cvRsquared <- cvRMSESD <- cvRsquaredSD <- NA
+            warning('NA vals produced as result of SBF/RFE or try errors')
+          }
+          
+          # Create modelName
+          modelName <- paste(i, j, k, sep = '.')
+          
+          result <- data.frame(modelName = modelName, 
+                               wsRMSE = wsRMSE, wsRsquared = wsRsquared,
+                               cvRMSE = cvRMSE, cvRMSESD = cvRMSESD,
+                               cvRsquared = cvRsquared, cvRsquaredSD = cvRsquaredSD)
+          results <- rbind(results, result)
+        }
       }
     }
+    return(results)
   }
-  return(results)
+}
+
+getOutcomeMeasurements <- function(outcome, data) {
+  outcome.df <- data[c('patno', 'event_id', outcome)]
+  outcome.df$time <- ifelse(outcome.df$event_id %in% c('BL', 'SC'), 0, NA)
+  outcome.df$time[outcome.df$event_id == 'V01'] <- 3
+  outcome.df$time[outcome.df$event_id == 'V02'] <- 6
+  outcome.df$time[outcome.df$event_id == 'V03'] <- 9
+  outcome.df$time[outcome.df$event_id == 'V04'] <- 12
+  outcome.df$time[outcome.df$event_id == 'V05'] <- 18
+  outcome.df$time[outcome.df$event_id == 'V06'] <- 24
+  outcome.df$time[outcome.df$event_id == 'V07'] <- 30
+  outcome.df$time[outcome.df$event_id == 'V08'] <- 36
+  outcome.df$time[outcome.df$event_id == 'V09'] <- 42
+  outcome.df$time[outcome.df$event_id == 'V10'] <- 48
+  outcome.df$time[outcome.df$event_id == 'V11'] <- 54
+  outcome.df$time[outcome.df$event_id == 'V12'] <- 60
+  
+  # NAs occur when a visit is not baseline or visit V, get rid of em
+  outcome.df <- outcome.df[outcome.df$event_id %in% c('BL', 'SC') | substr(outcome.df$event_id,1,1) == 'V',]
+  outcome.df <- outcome.df[!is.na(outcome.df$event_id),]
+  
 }
 
 
@@ -366,6 +455,7 @@ SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2,
     for (typeMethod in typeMethods){
       
       metrics <- lapply(FitListObj[[outVar]][[typeMethod]], function(x){
+        if(attr(x, 'class') == 'try-error') return(NA)
         m <- round(mean(x$resample[,metric], na.rm=na.rm), digits)
         s <- round(sd(x$resample[,metric], na.rm=na.rm), digits)
         r <- paste0(m, " (", s, ")")
@@ -389,8 +479,11 @@ SummaryTable <- function(FitListObj, metric = "Rsquared", digits = 2,
 bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
                       na.rm = FALSE) {
   f <- function(Fit) {
-    Fit <- unlist(Fit, recursive=FALSE)
-    stat <- function(fit) apply(fit$resample[metric], 2, mean, na.rm=na.rm)
+    Fit <- Fit$Train
+    stat <- function(fit) {
+      if(attr(fit, 'class') == 'try-error') return(NA)
+      apply(fit$resample[metric], 2, mean, na.rm=na.rm)
+    }
     vals <- sapply(Fit, stat)
     idx <- if(max) which.max(vals) else which.min(vals)
     Fit[[idx]]
@@ -398,11 +491,22 @@ bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
   lapply(FitList, f)
 }
 
-
 ## Return outcomes values for shiny app
 outValsList <- function(BestFitList, digits = getOption("digits")) {
   lapply(BestFitList, function(fit) {
     data.frame(obs = fit$trainingData$.outcome,
                pred = round(as.vector(predict(fit)), digits))
   })
+}
+
+appendList <- function (x, val) 
+{
+  stopifnot(is.list(x), is.list(val))
+  xnames <- names(x)
+  for (v in names(val)) {
+    x[[v]] <- if (v %in% xnames && is.list(x[[v]]) && is.list(val[[v]])) 
+      appendList(x[[v]], val[[v]])
+    else c(x[[v]], val[[v]])
+  }
+  x
 }
