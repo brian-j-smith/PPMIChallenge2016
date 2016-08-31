@@ -56,25 +56,25 @@ str(Dataset)
 apply(Dataset, 2, function(x) sum(!is.na(x)))
 
 outVarsList <- list(
-  "MDS-UPDRS" = c("2-year Slope" = "nptotal.absolute"),
-  "MDS-UPDRS I" = c("2-year Slope" = "np1total.absolute"),
-  "MDS-UPDRS II" = c("2-year Slope" = "np2total.absolute"),
-  "MDS-UPDRS III" = c("2-year Slope" = "np3total.absolute"),
+  "MDS-UPDRS" = c("2-Year Slope" = "nptotal.absolute"),
+  "MDS-UPDRS I" = c("2-Year Slope" = "np1total.absolute"),
+  "MDS-UPDRS II" = c("2-Year Slope" = "np2total.absolute"),
+  "MDS-UPDRS III" = c("2-Year Slope" = "np3total.absolute"),
   
-  "MCA Total" = c("2-year Slope" = "mcatot.absolute"),
-  "GDS Total" = c("2-year Slope" = "gds_total.absolute"),
-  "REM Total" = c("2-year Slope" = "rem_total.absolute"),
-  "STAI Total" = c("2-year Slope" = "stai_total.absolute"),
-  "JLO Total" = c("2-year Slope" = "jlo_totcalc.absolute"),
-  "SCOPA Total" = c("2-year Slope" = "scopa_total.absolute"),
-  "QUIP Total" = c("2-year Slope" = "quip_total.absolute"),
-  "ESS Total" = c("2-year Slope" = "ess_total.absolute"),
-  "Total Recall" = c("2-year Slope" = "dvt_total_recall.absolute"),
+  "MCA Total" = c("2-Year Slope" = "mcatot.absolute"),
+  "GDS Total" = c("2-Year Slope" = "gds_total.absolute"),
+  "REM Total" = c("2-Year Slope" = "rem_total.absolute"),
+  "STAI Total" = c("2-Year Slope" = "stai_total.absolute"),
+  "JLO Total" = c("2-Year Slope" = "jlo_totcalc.absolute"),
+  "SCOPA Total" = c("2-Year Slope" = "scopa_total.absolute"),
+  "QUIP Total" = c("2-Year Slope" = "quip_total.absolute"),
+  "ESS Total" = c("2-Year Slope" = "ess_total.absolute"),
+  "Total Recall" = c("2-Year Slope" = "dvt_total_recall.absolute"),
   
-  "AI Putamen" = c("2-year Slope" = "aiputamen.absolute"),
-  "CDR" = c("2-year Slope" = "countdensityratio.absolute"),
-  "Mean Striatum" = c("2-year Relative Slope (% change)" = "meanstriatum.relative"),
-  "Mean Putamen" = c("2-year Relative Slope (% change)" = "meanputamen.relative")
+  "AI Putamen" = c("2-Year Slope" = "aiputamen.absolute"),
+  "CDR" = c("2-Year Slope" = "countdensityratio.absolute"),
+  "Mean Striatum" = c("2-Year Relative Slope" = "meanstriatum.relative"),
+  "Mean Putamen" = c("2-Year Relative Slope" = "meanputamen.relative")
 )
 
 
@@ -113,7 +113,7 @@ save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
 ## Summary results
 
 RatesFitsSummary <- SummaryTable(AllRatesFits, digits=3)
-RatesFitsBest <- bestmodel(AllRatesFits)
+RatesFitsBest <- bestmodel(AllRatesFits, metric = 'RMSE')
 
 ## Shiny trial design tool data
 
@@ -124,9 +124,8 @@ rate_multiplier <- 24 # Set to 1 for monthly, 12 for yearly, etc
 RatesFitsVals <- lapply(RatesFitsVals, function(x) x * rate_multiplier)
 
 exp.idx <- grep('relative', names(RatesFitsVals))
-
-RatesFitsVals[exp.idx] <- lapply(RatesFitsVals[exp.idx], function(x) exp(x)-1)
-RatesFitsVals <- lapply(RatesFitsVals, round, digits = 3)
+RatesFitsVals[-exp.idx] <- lapply(RatesFitsVals[-exp.idx], round, digits = 2)
+RatesFitsVals[exp.idx] <- lapply(RatesFitsVals[exp.idx], function(x) round((exp(x)-1),2))
 ## Save results and data
 
 save(RatesFitsSummary, RatesFitsBest, RatesFitsVars, RatesFitsVals,
