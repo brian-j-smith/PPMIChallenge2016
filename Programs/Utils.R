@@ -491,7 +491,6 @@ bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
   lapply(FitList, f)
 }
 
-
 ## Return outcomes values for shiny app
 outValsList <- function(BestFitList, digits = getOption("digits")) {
   lapply(BestFitList, function(fit) {
@@ -500,8 +499,6 @@ outValsList <- function(BestFitList, digits = getOption("digits")) {
   })
 }
 
-
-## appendList function
 appendList <- function (x, val) 
 {
   stopifnot(is.list(x), is.list(val))
@@ -512,27 +509,4 @@ appendList <- function (x, val)
     else c(x[[v]], val[[v]])
   }
   x
-}
-
-
-## Return vars and coef ests for ENET best models
-enetBestVars <- function(BestModelList){
-    idx <- unlist(lapply(
-        BestModelList,
-        function(x){
-            any(class(x$finalModel) %in% c("elnet", "glmnet"))
-        }
-    ))
-    ENETBestFits <- BestModelList[idx]
-    VarsCoefs <- lapply(
-        ENETBestFits, 
-        function(x){
-            enetObj <- x$finalModel
-            idx <- predict(enetObj, type = "nonzero", s = enetObj$lambdaOpt)$X1
-            beta <- coef(enetObj, s = enetObj$lambdaOpt)
-            class(enetObj)
-            cbind(beta[idx+1,])
-        }
-    )
-    return(VarsCoefs)
 }
