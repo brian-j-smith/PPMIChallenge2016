@@ -59,11 +59,11 @@ outVarsList <- list(
              "2-Year Change" = "countdensityratio_diff.V06",
              "2-Year AUC" = "countdensityratio_auc.V06"),
   "AI Putamen" = c("1-Year Change" = "aiputamen_diff.V04",
-                  "2-Year Change" = "aiputamen_diff.V06", 
-                  "2-Year AUC" = "aiputamen_auc.V06"),
+                   "2-Year Change" = "aiputamen_diff.V06"),
+  "AI Putamen AUC" = c("2-Year AUC" = "aiputamen_auc.V06"),
   "AI Caudate" = c("1-Year Change" = "aicaudate_diff.V04",
-                   "2-Year Change" = "aicaudate_diff.V06",
-                   "2-Year AUC" = "aicaudate_auc.V06"),
+                   "2-Year Change" = "aicaudate_diff.V06"),
+  "AI Caudate AUC" = c("2-Year AUC" = "aicaudate_auc.V06"),
   "Imaging PCA" = c("1-Year Change" = "imaging_pca.V04",
                     "2-Year Change" = "imaging_pca.V06")
 )
