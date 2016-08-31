@@ -94,7 +94,6 @@ for(outVar in unlist(outVarsList)) {
 
 NonMotorSummary <- SummaryTable(FitList, digits = 3)
 NonMotorBest <- bestmodel(FitList)
-NonMotorENETVars <- enetBestVars(NonMotorBest)
 
 
 ## Analysis results to pass to Shiny trial calc
@@ -105,5 +104,5 @@ NonMotorVals <- outValsList(NonMotorBest, digits = 1)
 
 ## Save results and data
 
-save(NonMotorSummary, NonMotorBest, NonMotorENETVars, NonMotorVars, NonMotorVals, 
+save(NonMotorSummary, NonMotorBest, NonMotorVars, NonMotorVals, 
      file = "Programs/Analysis/NonMotorOutcomes.RData")
