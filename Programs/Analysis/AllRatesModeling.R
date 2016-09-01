@@ -14,7 +14,7 @@ motor_outcomes <- c('np1total', 'np2total', 'np3total', 'nptotal')
 non_motor_outcomes <- c('mcatot', 'rem_total', 'stai_total', 'jlo_totcalc',
                         'scopa_total', 'quip_total', 'ess_total', 'gds_total',
                         'dvt_total_recall')
-imaging_outcomes <- c('aiputamen', 'countdensityratio', 'meanstriatum', 'meanputamen')
+imaging_outcomes <- c('aiputamen', 'countdensityratio', 'aicaudate','meanstriatum', 'meanputamen')
 outcomes <- c(motor_outcomes, non_motor_outcomes, imaging_outcomes)
 
 
@@ -72,6 +72,7 @@ outVarsList <- list(
   "Total Recall" = c("2-Year Slope" = "dvt_total_recall.absolute"),
   
   "AI Putamen" = c("2-Year Slope" = "aiputamen.absolute"),
+  "AI Caudate" = c("2-Year Slope" = "aicaudate.absolute"),
   "CDR" = c("2-Year Slope" = "countdensityratio.absolute"),
   "Mean Striatum" = c("2-Year Relative Slope" = "meanstriatum.relative"),
   "Mean Putamen" = c("2-Year Relative Slope" = "meanputamen.relative")
@@ -118,14 +119,17 @@ RatesFitsBest <- bestmodel(AllRatesFits, metric = 'RMSE')
 ## Shiny trial design tool data
 
 RatesFitsVars <- outVarsList
-RatesFitsVals <- outValsList(RatesFitsBest)
 
-rate_multiplier <- 24 # Set to 1 for monthly, 12 for yearly, etc
-RatesFitsVals <- lapply(RatesFitsVals, function(x) x * rate_multiplier)
 
-exp.idx <- grep('relative', names(RatesFitsVals))
-RatesFitsVals[-exp.idx] <- lapply(RatesFitsVals[-exp.idx], round, digits = 2)
-RatesFitsVals[exp.idx] <- lapply(RatesFitsVals[exp.idx], function(x) round((exp(x)-1),2))
+idx <- unlist(RatesFitsVars) %in% unlist(RatesFitsVars[c("Mean Putamen", 'Mean Striatum')])
+RatesFitsVals <- c(
+  outValsList(RatesFitsBest[!idx], digits=1, 
+              transform = function(x) 24 * x),
+  
+  outValsList(RatesFitsBest[idx], digits=3, 
+              transform = function(x) exp(24 * x) - 1)
+)
+
 ## Save results and data
 
 save(RatesFitsSummary, RatesFitsBest, RatesFitsVars, RatesFitsVals,
