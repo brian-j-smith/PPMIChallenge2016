@@ -48,31 +48,25 @@ Dataset <- within(Dataset, {
 
 outVarsList <- list(
   "Mean Striatum" = c("1-Year Change" = "meanstriatum_diff.V04",
+                      "1-Year Relative Change" = "meanstriatum_perchange.V04",
                       "2-Year Change" = "meanstriatum_diff.V06",
-                      "1-Year % Change" = "meanstriatum_perchange.V04",
-                      "2-Year % Change" = "meanstriatum_perchange.V06"),
+                      "2-Year Relative Change" = "meanstriatum_perchange.V06"),
   "Mean Putamen" = c("1-Year Change" = "meanputamen_diff.V04",
+                     "1-Year Relative Change" = "meanputamen_perchange.V04",
                      "2-Year Change" = "meanputamen_diff.V06",
-                     "1-Year % Change" = "meanputamen_perchange.V04",
-                     "2-Year % Change" = "meanputamen_perchange.V06"),
+                     "2-Year Relative Change" = "meanputamen_perchange.V06"),
   "CDR" =  c("1-Year Change" = "countdensityratio_diff.V04",
-             "2-Year Change" = "countdensityratio_diff.V06",
-             "2-Year AUC" = "countdensityratio_auc.V06"),
+             "2-Year Change" = "countdensityratio_diff.V06"),
   "AI Putamen" = c("1-Year Change" = "aiputamen_diff.V04",
                    "2-Year Change" = "aiputamen_diff.V06"),
-  "AI Putamen AUC" = c("2-Year AUC" = "aiputamen_auc.V06"),
   "AI Caudate" = c("1-Year Change" = "aicaudate_diff.V04",
-                   "2-Year Change" = "aicaudate_diff.V06"),
-  "AI Caudate AUC" = c("2-Year AUC" = "aicaudate_auc.V06"),
-  "Imaging PCA" = c("1-Year Change" = "imaging_pca.V04",
-                    "2-Year Change" = "imaging_pca.V06")
+                   "2-Year Change" = "aicaudate_diff.V06")
 )
 
 trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
                "svmRadial")
 
 tuneGrids <- list(
-  "glmnet" = expand.grid(alpha=1, lambda=0.1^seq(0, 3, by=0.25)),
   "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
 )
 
@@ -82,8 +76,7 @@ for(outVar in unlist(outVarsList)) {
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
   FitList[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
-                                 tuneGrids=tuneGrids,
-                                seed=123)
+                                tuneGrids=tuneGrids, seed=123)
   
 }
 
@@ -91,14 +84,18 @@ for(outVar in unlist(outVarsList)) {
 ## Summary results
 
 ImagingSummary <- SummaryTable(FitList, digits=3)
-ImagingBest <- bestmodel(FitList)
+ImagingBest <- bestmodel(FitList, metric="RMSE")
 
 
 ## Shiny trial design tool data
 
 ImagingVars <- outVarsList
-ImagingVals <- outValsList(ImagingBest, digits=1)
 
+idx <- unlist(outVarsList) %in% unlist(outVarsList[c("AI Putamen", "AI Caudate")])
+ImagingVals <- c(
+  outValsList(ImagingBest[idx], digits=1),
+  outValsList(ImagingBest[!idx], digits=3)
+)
 
 ## Save results and data
 
