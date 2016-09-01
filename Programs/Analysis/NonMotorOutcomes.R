@@ -8,28 +8,6 @@ source("Programs/Analysis/Control.R")
 
 Dataset <- join(BaselinePD, NonMotorV, by = "patno")
 
-Dataset <- within(Dataset, {
-    dvt_total_recall_auc.V06 <- auc.change(cbind(0, dvt_total_recall_diff.V04, 
-                                                  dvt_total_recall_diff.V06), 
-                                 c(0, 12, 24) / 24) 
-    ess_total_auc.V06 <- auc.change(cbind(0, ess_total_diff.V04, ess_total_diff.V06), 
-                                            c(0, 12, 24) / 24)
-    gds_total_auc.V06 <- auc.change(cbind(0, gds_total_diff.V04, gds_total_diff.V06), 
-                                    c(0, 12, 24) / 24) 
-    jlo_totcalc_auc.V06 <- auc.change(cbind(0, jlo_totcalc_diff.V04, jlo_totcalc_diff.V06), 
-                                    c(0, 12, 24) / 24)
-    mcatot_auc.V06 <- auc.change(cbind(0, mcatot_diff.V04, mcatot_diff.V06), 
-                                 c(0, 12, 24) / 24)
-    quip_total_auc.V06 <- auc.change(cbind(0, quip_total_diff.V04, quip_total_diff.V06), 
-                                 c(0, 12, 24) / 24)
-    rem_total_auc.V06 <- auc.change(cbind(0, rem_total_diff.V04, rem_total_diff.V06), 
-                                     c(0, 12, 24) / 24)
-    scopa_total_auc.V06 <- auc.change(cbind(0, scopa_total_diff.V04, scopa_total_diff.V06), 
-                                    c(0, 12, 24) / 24)
-    stai_total_auc.V06 <- auc.change(cbind(0, stai_total_diff.V04, stai_total_diff.V06), 
-                                      c(0, 12, 24) / 24)
-})
-
 str(Dataset)
 summary(Dataset)
 
@@ -38,32 +16,23 @@ summary(Dataset)
 
 outVarsList <- list(
     "Total Recall" = c("1-Year Change" = "dvt_total_recall_diff.V04",
-                       "2-Year Change" = "dvt_total_recall_diff.V06",
-                       "2-Year AUC" = "dvt_total_recall_auc.V06"),
+                       "2-Year Change" = "dvt_total_recall_diff.V06"),
     "ESS Total" = c("1-Year Change" = "ess_total_diff.V04",
-                    "2-Year Change" = "ess_total_diff.V06",
-                    "2-Year AUC" = "ess_total_auc.V06"),
+                    "2-Year Change" = "ess_total_diff.V06"),
     "GDS Total" = c("1-Year Change" = "gds_total_diff.V04",
-                    "2=Year Change" = "gds_total_diff.V06",
-                    "2-Year AUC" = "gds_total_auc.V06"),
+                    "2=Year Change" = "gds_total_diff.V06"),
     "JLO Total" = c("1-Year Change" = "jlo_totcalc_diff.V04",
-                    "2-Year Change" = "jlo_totcalc_diff.V06",
-                    "2-Year AUC" = "jlo_totcalc_auc.V06"),
+                    "2-Year Change" = "jlo_totcalc_diff.V06"),
     "MCA Total" = c("1-Year Change" = "mcatot_diff.V04",
-                    "2-Year Change" = "mcatot_diff.V06",
-                    "2-Year AUC" = "mcatot_auc.V06"), 
+                    "2-Year Change" = "mcatot_diff.V06"), 
     "QUIP Total" = c("1-Year Change" = "quip_total_diff.V04",
-                     "2-Year Change" = "quip_total_diff.V06",
-                     "2-Year AUC" = "quip_total_auc.V06"),
+                     "2-Year Change" = "quip_total_diff.V06"),
     "REM Total" = c("1-Year Change" = "rem_total_diff.V04",
-                    "2-Year Change" = "rem_total_diff.V06",
-                    "2-Year AUC" = "rem_total_auc.V06"),
+                    "2-Year Change" = "rem_total_diff.V06"),
     "SCOPA Total" = c("1-Year Change" = "scopa_total_diff.V04",
-                      "2-Year Change" = "scopa_total_diff.V06",
-                      "2-Year AUC" = "scopa_total_auc.V06"),
+                      "2-Year Change" = "scopa_total_diff.V06"),
     "STAI Total" = c("1-Year Change" = "stai_total_diff.V04",
-                     "2-Year Change" = "stai_total_diff.V06",
-                     "2-Year AUC" = "stai_total_auc.V06")
+                     "2-Year Change" = "stai_total_diff.V06")
 )
 
 
@@ -93,7 +62,7 @@ for(outVar in unlist(outVarsList)) {
 ## Modelling results
 
 NonMotorSummary <- SummaryTable(FitList, digits = 3)
-NonMotorBest <- bestmodel(FitList)
+NonMotorBest <- bestmodel(FitList, metric = "RMSE")
 
 
 ## Analysis results to pass to Shiny trial calc
