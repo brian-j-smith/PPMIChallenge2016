@@ -20,7 +20,7 @@ outVarsList <- list(
     "ESS Total" = c("1-Year Change" = "ess_total_diff.V04",
                     "2-Year Change" = "ess_total_diff.V06"),
     "GDS Total" = c("1-Year Change" = "gds_total_diff.V04",
-                    "2=Year Change" = "gds_total_diff.V06"),
+                    "2-Year Change" = "gds_total_diff.V06"),
     "JLO Total" = c("1-Year Change" = "jlo_totcalc_diff.V04",
                     "2-Year Change" = "jlo_totcalc_diff.V06"),
     "MCA Total" = c("1-Year Change" = "mcatot_diff.V04",
