@@ -12,11 +12,22 @@ ImagingVars <- appendList(ImagingVars,
                           RatesFitsVars[intersect(names(RatesFitsVars), names(ImagingVars))])
 
 OutcomeVars <- c(
-  MotorUPDRSVars , NonMotorVars, ImagingVars
+  MotorUPDRSVars, NonMotorVars, ImagingVars
 )
+OutcomeVars <- OutcomeVars[order(names(OutcomeVars))]
 
 OutcomeVals <- c(
-  MotorUPDRSVals, RatesFitsVals , NonMotorVals, ImagingVals
+  MotorUPDRSVals, RatesFitsVals, NonMotorVals, ImagingVals
 )
 
-save(VERSION, OutcomeVars, OutcomeVals, file="shiny/Outcomes.RData")
+OutcomeBest <- c(
+  MotorUPDRSBest, RatesFitsBest, NonMotorBest, ImagingBest
+)
+
+AppInfo <- list(
+  version = VERSION,
+  selectedOutcome = names(MotorUPDRSVars)[1]
+)
+
+save(AppInfo, OutcomeVars, OutcomeVals, OutcomeBest,
+     file="shiny/Outcomes.RData")
