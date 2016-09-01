@@ -23,10 +23,10 @@ m2 <- NonMotorBest[[nonMotorVar]]
 m3 <- ImagingBest[[ImagingVar]]
 m4 <- RatesFitsBest[[WildCardVar]]
 
-v1 <- varImp(m1)
-v2 <- varImp(m2)
-v3 <- varImp(m3)
-v4 <- varImp(m4)
+v1 <- varImp(m1, nonpara = FALSE)
+v2 <- varImp(m2, nonpara = FALSE)
+v3 <- varImp(m3, nonpara = FALSE)
+v4 <- varImp(m4, nonpara = FALSE)
 o1 <- order(v1$importance, decreasing = T)
 o2 <- order(v2$importance, decreasing = T)
 o3 <- order(v3$importance, decreasing = T)
