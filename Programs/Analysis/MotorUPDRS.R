@@ -28,7 +28,7 @@ trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear",
                "svmRadial")
 
 tuneGrids <- list(
-  "glmnet" = expand.grid(alpha=1, lambda=0.1^seq(0, 3, by=0.25)),
+  "glmnet" = expand.grid(alpha=1, lambda=0.1^seq(0, 3, length=9)),
   "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
 )
 
@@ -46,7 +46,7 @@ for(outVar in unlist(outVarsList)) {
 ## Summary results
 
 MotorUPDRSSummary <- SummaryTable(FitList, digits=3)
-MotorUPDRSBest <- bestmodel(FitList)
+MotorUPDRSBest <- bestmodel(FitList, metric="RMSE")
 
 
 ## Shiny trial design tool data
