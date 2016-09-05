@@ -24,7 +24,7 @@ getRelative <- c('meanstriatum', 'meanputamen')
 scales <- ifelse(outcomes %in% getRelative, 'relative', 'absolute')
 
 outVars <- paste(outcomes, scales, sep = '.')
-save(outVars, file = 'Programs/Analysis/Models/Rate_outVars.RData')
+# save(outVars, file = 'Programs/Analysis/Models/Rate_outVars.RData')
 
 time_cuttoff <- 24 # Don't include observations past this length of time
 visit_musts <- 'V06' # Patients must have had this visit
