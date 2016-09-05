@@ -37,6 +37,7 @@ using(parallel)
 registerDoSNOW(makeCluster(max(detectCores() - 1, 1)))
 
 using(shiny)
+using(shinyBS)
 using(DT)
 using(ggvis)
 using(gam)
