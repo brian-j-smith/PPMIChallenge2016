@@ -36,7 +36,7 @@ outVarsList <- list(
 )
 
 
-trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "plsRglm", "rf", "svmLinear", "svmRadial")
+trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear", "svmRadial")
 
 tuneGrids <- list(
     "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
