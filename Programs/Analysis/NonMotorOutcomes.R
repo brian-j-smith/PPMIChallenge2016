@@ -24,7 +24,7 @@ outVarsList <- list(
     "JLO Total" = c("1-Year Change" = "jlo_totcalc_diff.V04",
                     "2-Year Change" = "jlo_totcalc_diff.V06"),
     "MCA Total" = c("1-Year Change" = "mcatot_diff.V04",
-                    "2-Year Change" = "mcatot_diff.V06"), 
+                    "2-Year Change" = "mcatot_diff.V06"),
     "QUIP Total" = c("1-Year Change" = "quip_total_diff.V04",
                      "2-Year Change" = "quip_total_diff.V06"),
     "REM Total" = c("1-Year Change" = "rem_total_diff.V04",
@@ -35,34 +35,35 @@ outVarsList <- list(
                      "2-Year Change" = "stai_total_diff.V06")
 )
 
-
 trMethods <- c("gbm", "glmnet", "glmStepAIC", "nnet", "pls", "rf", "svmLinear", "svmRadial")
 
 tuneGrids <- list(
     "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
 )
 
-FitList <- list()
+NonMotorFitList <- list()
 for(outVar in unlist(outVarsList)) {
     
     ## Model inputs and outputs
     fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
-    FitList[[outVar]] <- modelfit(
+    NonMotorFitList[[outVar]] <- modelfit(
         fo, 
         Dataset, 
-        ImpMethod = c("knnImpute"),
-        trMethods=trMethods,
+        trMethods = trMethods,
         tuneGrids = tuneGrids,
+        trControl = trControlCV(savePredictions = "final"),
         seed = 123
     )
     
 }
 
+# save(NonMotorFitList, file = "Programs/Analysis/NonMotorFitList.RData")
+
 
 ## Modelling results
 
-NonMotorSummary <- SummaryTable(FitList, digits = 3)
-NonMotorBest <- bestmodel(FitList, metric = "RMSE")
+NonMotorSummary <- SummaryTable(NonMotorFitList, digits = 3)
+NonMotorBest <- bestmodel(NonMotorFitList, metric = "RMSE")
 
 
 ## Analysis results to pass to Shiny trial calc
