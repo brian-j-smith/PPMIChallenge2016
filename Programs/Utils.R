@@ -494,11 +494,17 @@ bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
 ## Return outcomes values for shiny app
 outValsList <- function(BestFitList, digits = getOption("digits"),
                         transform = function(x) x) {
-  lapply(BestFitList, function(fit) {
-    
-    data.frame(obs = transform(fit$trainingData$.outcome),
-               pred = round(transform(as.vector(predict(fit))), digits))
-  })
+    lapply(BestFitList, function(fit) {
+        avgpred <- aggregate(
+            fit$pred$pred, 
+            list(fit$pred$rowIndex),
+            mean
+        )
+        df <- data.frame(
+            obs = transform(fit$trainingData$.outcome),
+            pred = transform(round(avgpred$x, digits))
+        )
+    })
 }
 
 appendList <- function (x, val) 
