@@ -19,6 +19,7 @@ trControlCV <- function(seed, ...) {
     number = cv.number,
     repeats = cv.repeats,
     seeds = trSeeds(seed),
+    savePredictions = "final",
     ...
   )
 }

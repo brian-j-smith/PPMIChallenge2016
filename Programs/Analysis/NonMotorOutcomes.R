@@ -51,7 +51,6 @@ for(outVar in unlist(outVarsList)) {
         Dataset, 
         trMethods = trMethods,
         tuneGrids = tuneGrids,
-        trControl = trControlCV(savePredictions = "final"),
         seed = 123
     )
     
