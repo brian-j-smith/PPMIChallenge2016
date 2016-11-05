@@ -495,14 +495,14 @@ bestmodel <- function(FitList, metric = "Rsquared", max = (metric != "RMSE"),
 outValsList <- function(BestFitList, digits = getOption("digits"),
                         transform = function(x) x) {
     lapply(BestFitList, function(fit) {
-        avgpred <- aggregate(
+        avgpred <- tapply(
             fit$pred$pred, 
-            list(fit$pred$rowIndex),
+            fit$pred$rowIndex,
             mean
-        )
-        df <- data.frame(
-            obs = transform(fit$trainingData$.outcome),
-            pred = transform(round(avgpred$x, digits))
+        ) %>% as.vector
+        data.frame(
+          obs = transform(fit$trainingData$.outcome),
+          pred = round(transform(avgpred), digits)
         )
     })
 }
