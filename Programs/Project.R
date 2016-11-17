@@ -9,7 +9,7 @@ remove(list=objects())
 
 
 ## Project version
-VERSION <- "1.0.0"
+VERSION <- "1.1.0"
 
 
 ## PPMI source datasets
