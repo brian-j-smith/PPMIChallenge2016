@@ -2,12 +2,8 @@
 # Date created : 8/11/16 
 # Description: Run all rates models
 
-source('Programs/project.R')
 source('Programs/Analysis/BaselineData.R')
 source("Programs/Analysis/Control.R")
-load("Data/Imaging.RData")
-load("Data/Motor.RData")
-load("Data/NonMotor.RData")
 
 # Initialize outcomes of interest
 motor_outcomes <- c('np1total', 'np2total', 'np3total', 'nptotal')
@@ -24,7 +20,6 @@ getRelative <- c('meanstriatum', 'meanputamen')
 scales <- ifelse(outcomes %in% getRelative, 'relative', 'absolute')
 
 outVars <- paste(outcomes, scales, sep = '.')
-# save(outVars, file = 'Programs/Analysis/Models/Rate_outVars.RData')
 
 time_cuttoff <- 24 # Don't include observations past this length of time
 visit_musts <- 'V06' # Patients must have had this visit
@@ -88,7 +83,7 @@ tuneGrids <- list(
   "nnet" = expand.grid(size=c(1, 3, 5), decay=0.1^(1:4))
 )
 
-Fit <- list()
+AllRatesFits <- list()
 
 nIter <- length(outVars)
 i <- 1
@@ -98,18 +93,12 @@ for(outVar in unlist(outVars)) {
   
   ## Model inputs and outputs
   fo <- formula(paste(outVar, "~", paste(BaselinePDVars, collapse=" + ")))
-  Fit[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
+  AllRatesFits[[outVar]] <- modelfit(fo, Dataset, trMethods=trMethods,
                             sbfMethods=sbfMethods,  tuneGrids=tuneGrids,
                             seed = 1232)
   i <- i + 1
-  tempRatesFits <- Fit
-  save(tempRatesFits, file = 'Programs/Analysis/Models/tempRatesFits.RData')
-  
-}
 
-Fit
-AllRatesFits <- Fit
-save(AllRatesFits, file = 'Programs/Analysis/Models/AllRatesFits.RData')
+}
 
 ## Summary results
 
@@ -134,4 +123,3 @@ RatesFitsVals <- c(
 
 save(RatesFitsSummary, RatesFitsBest, RatesFitsVars, RatesFitsVals,
      file="Programs/Analysis/RatesFits.RData")
-
